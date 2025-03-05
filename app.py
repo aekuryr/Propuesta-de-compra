@@ -30,7 +30,7 @@ if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
 
     # Calcular la cantidad necesaria para abastecer 6 meses
-    df["Cantidad_Necesaria"] = (df["CPM Nacional"] * 6) - df["Existencias totales"]
+    df["Propuesta_de_compra"] = (df["CPM Nacional"] * 6) - df["Existencias totales"]
 
     # Identificar medicamentos críticos para abastecimiento (baja cobertura nacional)
     df["Critico_Abastecimiento"] = df["Cobertura Nacional"] < 6
