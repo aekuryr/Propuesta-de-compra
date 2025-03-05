@@ -7,6 +7,22 @@ st.set_page_config(page_title="📊 Propuesta de Compra de Farmacia", layout="wi
 # Título de la aplicación
 st.title("📊 Propuesta de Compra de Farmacia")
 
+# Sección de introducción con explicaciones
+st.markdown("""
+### ℹ️ Instrucciones y Explicaciones
+
+🔹 **Valores negativos en `Cantidad_Necesaria`**  
+Si la cantidad necesaria es negativa, significa que el stock actual **ya es suficiente** para cubrir los 6 meses requeridos.
+
+🔹 **Interpretación de `Critico_Abastecimiento`**  
+- **"Crítico para abastecimiento"** → Medicamentos con **alta rotación** (`Código_Consumo A`) pero **bajo stock** (`Código_Stock C`), por lo que su compra es prioritaria.  
+- **"No es crítico"** → No cumple con estas condiciones.
+
+🔹 **Interpretación de `Stock_Vencimiento_Alto`**  
+- **"Alta cantidad se vence"** → Más del **50% del stock actual** se vencerá en los próximos **90 días**, por lo que puede requerir reposición.  
+- **"Baja cantidad de vencimiento"** → Menos del **50% del stock** está próximo a vencer.
+""")
+
 # Cargar archivo CSV
 uploaded_file = st.file_uploader("📂 Sube tu archivo CSV con el inventario", type=["csv"])
 
