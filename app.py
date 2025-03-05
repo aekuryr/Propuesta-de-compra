@@ -1,32 +1,35 @@
 import pandas as pd
 import streamlit as st
 
+# Configuración de la aplicación
+st.set_page_config(page_title="📊 Propuesta de Compra de Farmacia", layout="wide")
+
 # Título de la aplicación
-st.title("📊 Análisis de Inventario de Farmacia")
+st.title("📊 Propuesta de Compra de Farmacia")
 
 # Cargar archivo CSV
-uploaded_file = st.file_uploader("Sube tu archivo CSV con el inventario", type=["csv"])
+uploaded_file = st.file_uploader("📂 Sube tu archivo CSV con el inventario", type=["csv"])
 
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
 
     # Calcular la cantidad necesaria para abastecer 6 meses
-    df["Cantidad_Necesaria"] = (df["CPM"] * 6) - df["Stock"]
+    df["Cantidad_Necesaria"] = (df["CPM Nacional"] * 6) - df["Existencias totales"]
 
-    # Identificar medicamentos críticos para abastecimiento
-    df["Critico_Abastecimiento"] = df["Codigo_Consumo"].str.startswith("A") & df["Codigo_Stock"].str.startswith("C")
+    # Identificar medicamentos críticos para abastecimiento (baja cobertura nacional)
+    df["Critico_Abastecimiento"] = df["Cobertura Nacional"] < 6
 
     # Identificar medicamentos con más del 50% del stock venciendo en 90 días
-    df["Stock_Vencimiento_Alto"] = df["Total de existencias que vencen en los próximos 90 días"] > (df["Stock"] * 0.5)
+    df["Stock_Vencimiento_Alto"] = df["Total de existencias que vencen en los próximos 90 días"] > (df["Existencias totales"] * 0.5)
 
-    # Filtro de medicamentos que necesitan compra
+    # Filtrar los medicamentos que necesitan compra
     df_compra = df[
-        (df["Cantidad_Necesaria"] > 0) |
-        df["Critico_Abastecimiento"] |
-        df["Stock_Vencimiento_Alto (>50%)"]
-    ].copy()
+        (df["Cantidad_Necesaria"] > 0) |  
+        df["Critico_Abastecimiento"] |  
+        df["Stock_Vencimiento_Alto"]
+    ].copy()  
 
-    # Etiquetas más descriptivas
+    # Reemplazar valores en las columnas con etiquetas más descriptivas
     df_compra["Critico_Abastecimiento"] = df_compra["Critico_Abastecimiento"].replace({
         True: "Crítico para abastecimiento",
         False: "No es crítico"
@@ -39,7 +42,7 @@ if uploaded_file is not None:
 
     # Mostrar resultados
     st.subheader("📌 Medicamentos que requieren compra")
-    st.write(df_compra)
+    st.dataframe(df_compra)
 
     # Permitir descarga del archivo procesado
     csv = df_compra.to_csv(index=False).encode('utf-8')
@@ -49,3 +52,5 @@ if uploaded_file is not None:
         file_name="Propuesta_Compra_Medicamentos.csv",
         mime="text/csv"
     )
+else:
+    st.info("⚠️ Por favor, sube un archivo CSV para analizar el inventario.")
