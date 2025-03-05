@@ -23,8 +23,8 @@ Si la cantidad necesaria es negativa, significa que el stock actual **ya es sufi
 - **"Baja cantidad de vencimiento"** → Menos del **50% del stock** está próximo a vencer.
 """)
 
-**Interpretación de `Cantidad_necesaria`**
-- El calculo se ha realizado para que la propuesta estime la cantidad para cubrir 6 meses basado en el CPM.
+### 📖 Interpretación de `Cantidad_Necesaria`
+- El cálculo se ha realizado para que la propuesta estime la cantidad necesaria para cubrir **6 meses**, basado en el **Consumo Promedio Mensual (CPM)**.
 
 # 📌 Agregar instrucciones para descargar el archivo correcto
 st.markdown("""
