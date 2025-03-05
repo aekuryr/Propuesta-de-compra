@@ -11,7 +11,7 @@ st.title("📊 Análisis de Inventario de Farmacia")
 st.markdown("""
 ### ℹ️ Instrucciones y Explicaciones
 
-📖 Interpretación de `Cantidad_Necesaria`
+**Interpretación de `Cantidad_Necesaria`**
 - El cálculo se ha realizado para que la propuesta estime la cantidad necesaria para cubrir **6 meses**, basado en el **Consumo Promedio Mensual (CPM)**.
 
 🔹 **Valores negativos en `Cantidad_Necesaria`**  
