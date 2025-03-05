@@ -24,7 +24,7 @@ if uploaded_file is not None:
 
     # Filtrar los medicamentos que necesitan compra
     df_compra = df[
-        (df["Cantidad_Necesaria"] > 0) |  
+        (df["Propuesta_de_compra"] > 0) |  
         df["Critico_Abastecimiento"] |  
         df["Stock_Vencimiento_Alto"]
     ].copy()  
