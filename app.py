@@ -15,7 +15,7 @@ Antes de subir el archivo, asegúrate de descargar la **primera tabla** llamada
 """)
 
 # Opción 1: Agregar la imagen con la instrucción
-image_path = "tablero_existencias.png"  # Nombre del archivo de la imagen
+image_path = "tablero existencias.png"  # Nombre del archivo de la imagen
 st.image(image_path, caption="Ubicación del archivo a descargar", use_column_width=True)
 
 # Opción 2: Si prefieres solo texto, puedes comentar la línea anterior y dejar este mensaje:
