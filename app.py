@@ -32,7 +32,7 @@ Antes de subir el archivo, asegúrate de descargar la **primera tabla** llamada
 
 # Opción 1: Agregar la imagen con la instrucción
 image_path = "tablero existencias.png"  # Nombre del archivo de la imagen
-st.image(image_path, caption="Ubicación del archivo a descargar", use_column_width=True)
+st.image(image_path, caption="Ubicación del archivo a descargar", use_container_width=True)
 
 # Opción 2: Si prefieres solo texto, puedes comentar la línea anterior y dejar este mensaje:
 # st.info("⚠️ Para obtener los datos correctos, descarga el archivo desde el apartado de **Existencias**, en la primera tabla llamada **'Existencia y cobertura de medicamentos a nivel nacional'**.")
