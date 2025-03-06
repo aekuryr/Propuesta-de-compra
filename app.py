@@ -61,6 +61,9 @@ if uploaded_file is not None:
         # Calcular la cantidad necesaria para abastecer los meses seleccionados
         df["Cantidad_Necesaria"] = (df["CPM Nacional"] * meses_abastecimiento) - df["Existencias totales"]
 
+        # Nueva columna: Ajustar cantidad necesaria restando los medicamentos que se vencerán
+        df["Cantidad_Necesaria_Ajustada"] = df["Cantidad_Necesaria"] - df["Total de existencias que vencen en los próximos 90 días"]
+
         # Identificar medicamentos críticos para abastecimiento (baja cobertura nacional)
         df["Critico_Abastecimiento"] = df["Cobertura Nacional"] < meses_abastecimiento
 
@@ -69,7 +72,7 @@ if uploaded_file is not None:
 
         # Filtrar los medicamentos que necesitan compra
         df_compra = df[
-            (df["Cantidad_Necesaria"] > 0) |  
+            (df["Cantidad_Necesaria_Ajustada"] > 0) |  
             df["Critico_Abastecimiento"] |  
             df["Stock_Vencimiento_Alto"]
         ].copy()
@@ -87,6 +90,8 @@ if uploaded_file is not None:
 
         # Mostrar resultados
         st.subheader(f"📌 Medicamentos que requieren compra ({meses_abastecimiento} meses de abastecimiento)")
+
+        # Mostrar DataFrame en Streamlit
         st.dataframe(df_compra)
 
         # Permitir descarga del archivo procesado
@@ -99,4 +104,3 @@ if uploaded_file is not None:
         )
 else:
     st.info("⚠️ Por favor, sube un archivo CSV para analizar el inventario.")
-
