@@ -7,6 +7,18 @@ st.set_page_config(page_title="📊 Análisis de Inventario de Farmacia", layout
 # Título de la aplicación
 st.title("📊 Análisis de Inventario de Farmacia")
 
+# Explicación
+st.markdown("""
+### ℹ️ Instrucciones y Explicaciones
+
+🔹 **Clasificación de `Critico_Abastecimiento`**  
+Ahora se categoriza en 4 niveles según la cantidad necesaria para lograr la cobertura deseada:
+- 🟥 **Alta** → Más del **75%** de la cantidad deseada falta en stock.
+- 🟧 **Media** → Entre **50% y 75%** de la cantidad deseada falta en stock.
+- 🟨 **Baja** → Entre **25% y 50%** de la cantidad deseada falta en stock.
+- 🟩 **No es crítico** → Menos del **25%** o el stock es suficiente.
+""")
+
 # 📌 Explicaciones
 with st.expander("ℹ️ Explicación de los Análisis"):
     st.markdown("""
