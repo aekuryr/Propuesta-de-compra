@@ -58,7 +58,7 @@ if uploaded_file is not None:
         # 📌 Cálculo de métricas básicas
         df["Cantidad_Deseada"] = df["CPM Nacional"] * meses_abastecimiento
         df["Cantidad_Necesaria"] = df["Cantidad_Deseada"] - df["Existencias totales"]
-        df["Cantidad_Necesaria_Ajustada"] = df["Cantidad_Necesaria"] + df["Total de existencias que vencen en los próximos 90 días"]
+        df["Cantidad_Necesaria_Ajustada"] = df["Cantidad_Necesaria"] - df["Total de existencias que vencen en los próximos 90 días"]
         df["Cantidad_Necesaria_Ajustada"] = df["Cantidad_Necesaria_Ajustada"].apply(lambda x: max(x, 0))
 
         # 📌 Análisis de medicamentos en exceso
@@ -69,7 +69,6 @@ if uploaded_file is not None:
         # 📌 Cálculo del índice de rotación de inventario
         df["Consumo_Anual"] = df["CPM Nacional"] * 12
         df["Rotacion_Inventario"] = df["Consumo_Anual"] / df["Existencias totales"]
-        df["Rotacion_Inventario"] = df["Rotacion_Inventario"].apply(lambda x: round(x, 2))
 
         # 📌 Clasificación ABC (Análisis de Pareto 80/20)
         df = df.sort_values(by="Consumo_Anual", ascending=False)
@@ -120,6 +119,13 @@ if uploaded_file is not None:
 
         df_compra["Critico_Abastecimiento"] = df_compra["Critico_Abastecimiento"].astype(str)
         df_compra["Clasificacion_ABC"] = df_compra["Clasificacion_ABC"].astype(str)
+
+        # 📌 Redondear todas las columnas numéricas a 2 decimales
+        columnas_redondeo = [
+            "Cantidad_Necesaria", "Cantidad_Necesaria_Ajustada", "Stock_Exceso", 
+            "Porcentaje_Exceso", "Consumo_Anual", "Rotacion_Inventario", "Consumo_Acumulado"
+        ]
+        df_compra[columnas_redondeo] = df_compra[columnas_redondeo].round(2)
 
         # 📌 Mostrar tabla con análisis
         st.subheader(f"📊 Análisis de Inventario ({meses_abastecimiento} meses de abastecimiento)")
