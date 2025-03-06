@@ -11,19 +11,12 @@ st.title("📊 Análisis de Inventario de Farmacia")
 st.markdown("""
 ### ℹ️ Instrucciones y Explicaciones
 
-**Interpretación de `Cantidad_Necesaria`**
-- El cálculo se ha realizado para que la propuesta estime la cantidad necesaria para cubrir un número configurable de meses, basado en el **Consumo Promedio Mensual (CPM)**.
-
-🔹 **Valores negativos en `Cantidad_Necesaria`**  
-Si la cantidad necesaria es negativa, significa que el stock actual **ya es suficiente** para cubrir los meses requeridos.
-
-🔹 **Interpretación de `Critico_Abastecimiento`**  
-- **"Crítico para abastecimiento"** → Medicamentos con **alta rotación** (`Código_Consumo A`) pero **bajo stock** (`Código_Stock C`), por lo que su compra es prioritaria.  
-- **"No es crítico"** → No cumple con estas condiciones.
-
-🔹 **Interpretación de `Stock_Vencimiento_Alto`**  
-- **"Alta cantidad se vence"** → Más del **50% del stock actual** se vencerá en los próximos **90 días**, por lo que puede requerir reposición.  
-- **"Baja cantidad de vencimiento"** → Menos del **50% del stock** está próximo a vencer.
+🔹 **Nueva clasificación de `Critico_Abastecimiento`**  
+Ahora se categoriza en 4 niveles según la cantidad necesaria para lograr la cobertura deseada:
+- 🟥 **Alta** → Más del **75%** de la cantidad deseada falta en stock.
+- 🟧 **Media** → Entre **50% y 75%** de la cantidad deseada falta en stock.
+- 🟨 **Baja** → Entre **25% y 50%** de la cantidad deseada falta en stock.
+- 🟩 **No es crítico** → Menos del **25%** o el stock es suficiente.
 """)
 
 # 📌 Agregar instrucciones para descargar el archivo correcto
@@ -67,8 +60,21 @@ if uploaded_file is not None:
         # Si el valor es negativo, se cambia a 0
         df["Cantidad_Necesaria_Ajustada"] = df["Cantidad_Necesaria_Ajustada"].apply(lambda x: max(x, 0))
 
-        # Identificar medicamentos críticos para abastecimiento (baja cobertura nacional)
-        df["Critico_Abastecimiento"] = df["Cobertura Nacional"] < meses_abastecimiento
+        # Cantidad deseada para la cobertura total
+        df["Cantidad_Deseada"] = df["CPM Nacional"] * meses_abastecimiento
+
+        # Clasificación de Criticidad
+        def categorizar_criticidad(cantidad_necesaria, cantidad_deseada):
+            if cantidad_necesaria >= cantidad_deseada * 0.75:
+                return "🟥 Alta"
+            elif cantidad_necesaria >= cantidad_deseada * 0.50:
+                return "🟧 Media"
+            elif cantidad_necesaria >= cantidad_deseada * 0.25:
+                return "🟨 Baja"
+            else:
+                return "🟩 No es crítico"
+
+        df["Critico_Abastecimiento"] = df.apply(lambda row: categorizar_criticidad(row["Cantidad_Necesaria_Ajustada"], row["Cantidad_Deseada"]), axis=1)
 
         # Identificar medicamentos con más del 50% del stock venciendo en 90 días
         df["Stock_Vencimiento_Alto"] = df["Total de existencias que vencen en los próximos 90 días"] > (df["Existencias totales"] * 0.5)
@@ -76,16 +82,11 @@ if uploaded_file is not None:
         # Filtrar los medicamentos que necesitan compra
         df_compra = df[
             (df["Cantidad_Necesaria_Ajustada"] > 0) |  
-            df["Critico_Abastecimiento"] |  
+            (df["Critico_Abastecimiento"] != "🟩 No es crítico") |  
             df["Stock_Vencimiento_Alto"]
         ].copy()
 
-        # Reemplazar valores en las columnas con etiquetas más descriptivas
-        df_compra["Critico_Abastecimiento"] = df_compra["Critico_Abastecimiento"].replace({
-            True: "Crítico para abastecimiento",
-            False: "No es crítico"
-        })
-        
+        # Reemplazar valores en la columna `Stock_Vencimiento_Alto`
         df_compra["Stock_Vencimiento_Alto"] = df_compra["Stock_Vencimiento_Alto"].replace({
             True: "Alta cantidad se vence",
             False: "Baja cantidad de vencimiento"
