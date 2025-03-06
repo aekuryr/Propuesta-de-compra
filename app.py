@@ -121,9 +121,6 @@ if uploaded_file is not None:
         df_compra["Critico_Abastecimiento"] = df_compra["Critico_Abastecimiento"].astype(str)
         df_compra["Clasificacion_ABC"] = df_compra["Clasificacion_ABC"].astype(str)
 
-        # Redondear todas las columnas numéricas a 2 decimales
-        df_compra = df_compra.round(2)
-
         # 📌 Mostrar tabla con análisis
         st.subheader(f"📊 Análisis de Inventario ({meses_abastecimiento} meses de abastecimiento)")
         st.dataframe(df_compra.style.applymap(aplicar_color, subset=["Critico_Abastecimiento"]))
