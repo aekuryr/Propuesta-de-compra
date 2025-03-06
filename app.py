@@ -12,7 +12,7 @@ st.markdown("""
 ### ℹ️ Instrucciones y Explicaciones
 
 **Interpretación de `Cantidad_Necesaria`**
-- El cálculo se ha realizado para que la propuesta estime la cantidad necesaria para cubrir un número configurable de meses, basado en el **Consumo Promedio Mensual (CPM)**.
+- El cálculo estima la cantidad necesaria para cubrir un número configurable de meses, basado en el **Consumo Promedio Mensual (CPM)**.
 
 🔹 **Valores negativos en `Cantidad_Necesaria`**  
 Si la cantidad necesaria es negativa, significa que el stock actual **ya es suficiente** para cubrir los meses requeridos.
@@ -26,19 +26,22 @@ Si la cantidad necesaria es negativa, significa que el stock actual **ya es sufi
 - **"Baja cantidad de vencimiento"** → Menos del **50% del stock** está próximo a vencer.
 """)
 
-# 📌 Agregar instrucciones para descargar el archivo correcto
+# 📌 Instrucciones para descargar el archivo correcto
 st.markdown("""
 ### 🛠 **Paso previo: Descarga del archivo correcto**
 Antes de subir el archivo, asegúrate de descargar la **primera tabla** llamada  
 **"Existencia y cobertura de medicamentos a nivel nacional"** en el apartado de **Existencias**.
 """)
 
-# Opción 1: Agregar la imagen con la instrucción
+# Mostrar imagen con la instrucción
 image_path = "tablero existencias.png"  # Nombre del archivo de la imagen
 st.image(image_path, caption="Ubicación del archivo a descargar", use_container_width=True)
 
 # Configuración del número de meses
 meses_abastecimiento = st.slider("📅 Selecciona la cantidad de meses para calcular el abastecimiento", min_value=1, max_value=12, value=6)
+
+# Opción para considerar o no las existencias que vencerán pronto
+considerar_vencimiento = st.checkbox("📌 No tomar en cuenta existencias próximas a vencerse", value=True)
 
 # Cargar archivo CSV
 uploaded_file = st.file_uploader("📂 Sube tu archivo CSV con el inventario", type=["csv"])
@@ -58,8 +61,13 @@ if uploaded_file is not None:
     if missing_columns:
         st.error(f"⚠️ Error: El archivo no contiene las siguientes columnas requeridas: {', '.join(missing_columns)}")
     else:
-        # Calcular la cantidad necesaria para abastecer los meses seleccionados
-        df["Cantidad_Necesaria"] = (df["CPM Nacional"] * meses_abastecimiento) - df["Existencias totales"]
+        # Calcular la cantidad necesaria con o sin considerar el stock que vencerá pronto
+        if considerar_vencimiento:
+            df["Cantidad_Necesaria"] = (df["CPM Nacional"] * meses_abastecimiento) - (
+                df["Existencias totales"] - df["Total de existencias que vencen en los próximos 90 días"]
+            )
+        else:
+            df["Cantidad_Necesaria"] = (df["CPM Nacional"] * meses_abastecimiento) - df["Existencias totales"]
 
         # Identificar medicamentos críticos para abastecimiento (baja cobertura nacional)
         df["Critico_Abastecimiento"] = df["Cobertura Nacional"] < meses_abastecimiento
