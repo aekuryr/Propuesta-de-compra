@@ -19,6 +19,13 @@ Ahora se categoriza en 4 niveles según la cantidad necesaria para lograr la cob
 - 🟩 **No es crítico** → Menos del **25%** o el stock es suficiente.
 """)
 
+with st.expander("ℹ️ Explicación de las columnas"):
+    st.markdown("""
+    - **Cantidad_Necesaria:** Diferencia entre la cantidad deseada y el stock actual. Indica cuánto medicamento hace falta para alcanzar la cobertura establecida.
+    - **Cantidad_Deseada:** Cantidad óptima de medicamentos para garantizar el abastecimiento durante el período de tiempo seleccionado.
+    - **Cantidad_Necesaria_Ajustada:** Cantidad necesaria ajustada considerando las unidades que vencerán en los próximos 90 días.
+    """)
+
 # 📌 Agregar instrucciones para descargar el archivo correcto
 st.markdown("""
 ### 🛠 **Paso previo: Descarga del archivo correcto**
