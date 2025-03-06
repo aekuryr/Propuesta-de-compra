@@ -55,7 +55,7 @@ if uploaded_file is not None:
         df["Cantidad_Necesaria"] = (df["CPM Nacional"] * meses_abastecimiento) - df["Existencias totales"]
 
         # Nueva columna: Ajustar cantidad necesaria restando los medicamentos que se vencerán
-        df["Cantidad_Necesaria_Ajustada"] = df["Cantidad_Necesaria"] - df["Total de existencias que vencen en los próximos 90 días"]
+        df["Cantidad_Necesaria_Ajustada"] = df["Cantidad_Necesaria"] + df["Total de existencias que vencen en los próximos 90 días"]
 
         # Si el valor es negativo, se cambia a 0
         df["Cantidad_Necesaria_Ajustada"] = df["Cantidad_Necesaria_Ajustada"].apply(lambda x: max(x, 0))
