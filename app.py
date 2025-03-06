@@ -65,13 +65,13 @@ if uploaded_file is not None:
         df["Cantidad_Necesaria"] = (df["CPM Nacional"] * meses_abastecimiento) - df["Existencias totales"]
         
         # Calcular la cantidad necesaria sin contar el stock próximo a vencer
-        df["Cantidad_Necesaria_SinVencimiento"] = (df["CPM Nacional"] * meses_abastecimiento) - (
+        df["Cantidad_Necesaria_Sin_Vencimiento"] = (df["CPM Nacional"] * meses_abastecimiento) - (
             df["Existencias totales"] - df["Total de existencias que vencen en los próximos 90 días"]
         )
 
         # Si el usuario selecciona el checkbox, se usa la versión sin vencimiento
         if considerar_vencimiento:
-            df["Cantidad_Necesaria_Final"] = df["Cantidad_Necesaria_SinVencimiento"]
+            df["Cantidad_Necesaria_Final"] = df["Cantidad_Necesaria_Sin_Vencimiento"]
 
         # Identificar medicamentos críticos para abastecimiento (baja cobertura nacional)
         df["Critico_Abastecimiento"] = df["Cobertura Nacional"] < meses_abastecimiento
