@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 
 # Configuración de la aplicación
-st.set_page_config(page_title="📊 Análisis de Inventario de Farmacia", layout="pide")
+st.set_page_config(page_title="📊 Análisis de Inventario de Farmacia", layout="wide")
 
 # Título de la aplicación
 st.title("📊 Análisis de Inventario de Farmacia")
