@@ -58,7 +58,7 @@ if uploaded_file is not None:
         # 📌 Cálculo de métricas básicas
         df["Cantidad_Deseada"] = df["CPM Nacional"] * meses_abastecimiento
         df["Cantidad_Necesaria"] = df["Cantidad_Deseada"] - df["Existencias totales"]
-        df["Cantidad_Necesaria_Ajustada"] = df["Cantidad_Necesaria"] - df["Total de existencias que vencen en los próximos 90 días"]
+        df["Cantidad_Necesaria_Ajustada"] = df["Cantidad_Necesaria"] + df["Total de existencias que vencen en los próximos 90 días"]
         df["Cantidad_Necesaria_Ajustada"] = df["Cantidad_Necesaria_Ajustada"].apply(lambda x: max(x, 0))
 
         # 📌 Análisis de medicamentos en exceso
