@@ -11,7 +11,7 @@ st.title("📊 Análisis de Inventario de Farmacia")
 st.markdown("""
 ### ℹ️ Instrucciones y Explicaciones
 
-🔹 **Nueva clasificación de `Critico_Abastecimiento`**  
+🔹 **Clasificación de `Critico_Abastecimiento`**  
 Ahora se categoriza en 4 niveles según la cantidad necesaria para lograr la cobertura deseada:
 - 🟥 **Alta** → Más del **75%** de la cantidad deseada falta en stock.
 - 🟧 **Media** → Entre **50% y 75%** de la cantidad deseada falta en stock.
