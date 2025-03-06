@@ -23,8 +23,8 @@ Ahora se categoriza en 4 niveles según la cantidad necesaria para lograr la cob
 with st.expander("ℹ️ Explicación de los Análisis"):
     st.markdown("""
     - **📦 Stock_Exceso:** Cantidad de medicamento que excede la cantidad deseada.
-    - **🔄 Índice de Rotación:** Veces que el inventario se renueva en un año.
-    - **📊 Clasificación ABC:** Prioriza medicamentos según su importancia en consumo.
+    - **🔄 Índice de Rotación:** Veces que el inventario se renueva en un año. Si es bajo, indica riesgo de caducidad.
+    - **📊 Clasificación ABC:** Prioriza medicamentos según su importancia en consumo. Medicamentos tipo A son los más críticos (80% del consumo).
     """)
 
 with st.expander("ℹ️ Explicación de las columnas"):
@@ -120,6 +120,9 @@ if uploaded_file is not None:
 
         df_compra["Critico_Abastecimiento"] = df_compra["Critico_Abastecimiento"].astype(str)
         df_compra["Clasificacion_ABC"] = df_compra["Clasificacion_ABC"].astype(str)
+
+        # Redondear todas las columnas numéricas a 2 decimales
+        df_compra = df_compra.round(2)
 
         # 📌 Mostrar tabla con análisis
         st.subheader(f"📊 Análisis de Inventario ({meses_abastecimiento} meses de abastecimiento)")
