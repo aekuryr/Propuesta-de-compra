@@ -64,6 +64,9 @@ if uploaded_file is not None:
         # Nueva columna: Ajustar cantidad necesaria restando los medicamentos que se vencerán
         df["Cantidad_Necesaria_Ajustada"] = df["Cantidad_Necesaria"] - df["Total de existencias que vencen en los próximos 90 días"]
 
+        # Si el valor es negativo, se cambia a 0
+        df["Cantidad_Necesaria_Ajustada"] = df["Cantidad_Necesaria_Ajustada"].apply(lambda x: max(x, 0))
+
         # Identificar medicamentos críticos para abastecimiento (baja cobertura nacional)
         df["Critico_Abastecimiento"] = df["Cobertura Nacional"] < meses_abastecimiento
 
