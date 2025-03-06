@@ -100,7 +100,7 @@ if uploaded_file is not None:
         # Seleccionar columnas a mostrar
         columnas_mostrar = ["CPM Nacional", "Existencias totales", "Cobertura Nacional", 
                             "Total de existencias que vencen en los próximos 90 días",
-                            "Cantidad_Necesaria", "Cantidad_Necesaria_SinVencimiento",
+                            "Cantidad_Necesaria_Sin_Vencimientos", "Cantidad_Necesaria",
                             "Critico_Abastecimiento", "Stock_Vencimiento_Alto"]
         
         # Si el usuario selecciona el checkbox, agregar la columna "Cantidad_Necesaria_Final"
