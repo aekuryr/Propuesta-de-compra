@@ -73,8 +73,8 @@ if uploaded_file is not None:
 
         # 📌 Clasificación ABC (Análisis de Pareto 80/20)
         df = df.sort_values(by="Consumo_Anual", ascending=False)
-        df["Consumo_Acumulado"] = df["Consumo_Anual"].cumsum()
         total_consumo = df["Consumo_Anual"].sum()
+        df["Consumo_Acumulado"] = df["Consumo_Anual"].cumsum()  # Esta columna NO se mostrará
 
         def clasificar_abc(x):
             if x <= total_consumo * 0.80:
@@ -114,15 +114,18 @@ if uploaded_file is not None:
         # 📌 Redondear todas las columnas numéricas a 2 decimales
         columnas_redondeo = [
             "Cantidad_Necesaria", "Cantidad_Necesaria_Ajustada", 
-            "Consumo_Anual", "Rotacion_Inventario", "Consumo_Acumulado"
+            "Consumo_Anual", "Rotacion_Inventario"
         ]
         df_compra[columnas_redondeo] = df_compra[columnas_redondeo].round(2)
+
+        # 📌 Eliminar la columna "Consumo_Acumulado" para que no se muestre
+        df_compra = df_compra.drop(columns=["Consumo_Acumulado"])
 
         # 📌 Mostrar tabla con análisis
         st.subheader(f"📊 Análisis de Inventario ({meses_abastecimiento} meses de abastecimiento)")
         st.dataframe(df_compra)
 
-        # 📥 Permitir descarga del archivo procesado
+        # 📥 Permitir descarga del archivo procesado SIN la columna "Consumo_Acumulado"
         csv = df_compra.to_csv(index=False).encode('utf-8')
         st.download_button(
             label=f"📥 Descargar análisis de inventario",
