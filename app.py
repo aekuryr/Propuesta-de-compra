@@ -61,11 +61,11 @@ if uploaded_file is not None:
     if missing_columns:
         st.error(f"⚠️ Error: El archivo no contiene las siguientes columnas requeridas: {', '.join(missing_columns)}")
     else:
-         # Calcular la cantidad necesaria para abastecer según el tiempo configurado
-         df["Cantidad_Necesaria"] = (df["CPM Nacional"] * tiempo_abastecimiento) - df["Existencias totales"]
+        # Calcular la cantidad necesaria para abastecer según el tiempo configurado
+        df["Cantidad_Necesaria"] = (df["CPM Nacional"] * tiempo_abastecimiento) - df["Existencias totales"]
 
-        # Identificar medicamentos críticos para abastecimiento (baja cobertura nacional)
-        df["Critico_Abastecimiento"] = df["Cobertura Nacional"] < 6
+        # Calcular la cantidad necesaria para abastecer según el tiempo configurado
+        df["Cantidad_Necesaria"] = (df["CPM Nacional"] * tiempo_abastecimiento) - df["Existencias totales"]
 
         # Identificar medicamentos con más del 50% del stock venciendo en 90 días
         df["Stock_Vencimiento_Alto"] = df["Total de existencias que vencen en los próximos 90 días"] > (df["Existencias totales"] * 0.5)
