@@ -61,13 +61,19 @@ if uploaded_file is not None:
     if missing_columns:
         st.error(f"⚠️ Error: El archivo no contiene las siguientes columnas requeridas: {', '.join(missing_columns)}")
     else:
-        # Calcular la cantidad necesaria con o sin considerar el stock que vencerá pronto
+        # Calcular la cantidad necesaria considerando todo el stock
+        df["Cantidad_Necesaria"] = (df["CPM Nacional"] * meses_abastecimiento) - df["Existencias totales"]
+        
+        # Calcular la cantidad necesaria sin contar el stock próximo a vencer
+        df["Cantidad_Necesaria_SinVencimiento"] = (df["CPM Nacional"] * meses_abastecimiento) - (
+            df["Existencias totales"] - df["Total de existencias que vencen en los próximos 90 días"]
+        )
+
+        # Determinar cuál de los valores usar según la opción seleccionada por el usuario
         if considerar_vencimiento:
-            df["Cantidad_Necesaria"] = (df["CPM Nacional"] * meses_abastecimiento) - (
-                df["Existencias totales"] - df["Total de existencias que vencen en los próximos 90 días"]
-            )
+            df["Cantidad_Necesaria_Final"] = df["Cantidad_Necesaria_SinVencimiento"]
         else:
-            df["Cantidad_Necesaria"] = (df["CPM Nacional"] * meses_abastecimiento) - df["Existencias totales"]
+            df["Cantidad_Necesaria_Final"] = df["Cantidad_Necesaria"]
 
         # Identificar medicamentos críticos para abastecimiento (baja cobertura nacional)
         df["Critico_Abastecimiento"] = df["Cobertura Nacional"] < meses_abastecimiento
@@ -77,7 +83,7 @@ if uploaded_file is not None:
 
         # Filtrar los medicamentos que necesitan compra
         df_compra = df[
-            (df["Cantidad_Necesaria"] > 0) |  
+            (df["Cantidad_Necesaria_Final"] > 0) |  
             df["Critico_Abastecimiento"] |  
             df["Stock_Vencimiento_Alto"]
         ].copy()
@@ -92,6 +98,15 @@ if uploaded_file is not None:
             True: "Alta cantidad se vence",
             False: "Baja cantidad de vencimiento"
         })
+
+        # Seleccionar columnas a mostrar
+        columnas_mostrar = ["CPM Nacional", "Existencias totales", "Cobertura Nacional", 
+                            "Total de existencias que vencen en los próximos 90 días",
+                            "Cantidad_Necesaria", "Cantidad_Necesaria_SinVencimiento",
+                            "Cantidad_Necesaria_Final", "Critico_Abastecimiento",
+                            "Stock_Vencimiento_Alto"]
+        
+        df_compra = df_compra[columnas_mostrar]
 
         # Mostrar resultados
         st.subheader(f"📌 Medicamentos que requieren compra ({meses_abastecimiento} meses de abastecimiento)")
