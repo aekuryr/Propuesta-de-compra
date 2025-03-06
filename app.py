@@ -69,11 +69,9 @@ if uploaded_file is not None:
             df["Existencias totales"] - df["Total de existencias que vencen en los próximos 90 días"]
         )
 
-        # Determinar cuál de los valores usar según la opción seleccionada por el usuario
+        # Si el usuario selecciona el checkbox, se usa la versión sin vencimiento
         if considerar_vencimiento:
             df["Cantidad_Necesaria_Final"] = df["Cantidad_Necesaria_SinVencimiento"]
-        else:
-            df["Cantidad_Necesaria_Final"] = df["Cantidad_Necesaria"]
 
         # Identificar medicamentos críticos para abastecimiento (baja cobertura nacional)
         df["Critico_Abastecimiento"] = df["Cobertura Nacional"] < meses_abastecimiento
@@ -83,7 +81,7 @@ if uploaded_file is not None:
 
         # Filtrar los medicamentos que necesitan compra
         df_compra = df[
-            (df["Cantidad_Necesaria_Final"] > 0) |  
+            (df["Cantidad_Necesaria_Final"] > 0 if considerar_vencimiento else df["Cantidad_Necesaria"] > 0) |  
             df["Critico_Abastecimiento"] |  
             df["Stock_Vencimiento_Alto"]
         ].copy()
@@ -103,9 +101,12 @@ if uploaded_file is not None:
         columnas_mostrar = ["CPM Nacional", "Existencias totales", "Cobertura Nacional", 
                             "Total de existencias que vencen en los próximos 90 días",
                             "Cantidad_Necesaria", "Cantidad_Necesaria_SinVencimiento",
-                            "Cantidad_Necesaria_Final", "Critico_Abastecimiento",
-                            "Stock_Vencimiento_Alto"]
+                            "Critico_Abastecimiento", "Stock_Vencimiento_Alto"]
         
+        # Si el usuario selecciona el checkbox, agregar la columna "Cantidad_Necesaria_Final"
+        if considerar_vencimiento:
+            columnas_mostrar.append("Cantidad_Necesaria_Final")
+
         df_compra = df_compra[columnas_mostrar]
 
         # Mostrar resultados
