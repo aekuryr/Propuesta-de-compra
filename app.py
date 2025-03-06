@@ -1,11 +1,44 @@
 import pandas as pd
 import streamlit as st
 
-# Configurar la aplicación
+# Configuración de la aplicación
 st.set_page_config(page_title="📊 Análisis de Inventario de Farmacia", layout="wide")
 
 # Título de la aplicación
 st.title("📊 Análisis de Inventario de Farmacia")
+
+# Explicación
+st.markdown("""
+### ℹ️ Instrucciones y Explicaciones
+
+**Interpretación de `Cantidad_Necesaria`**
+- El cálculo se ha realizado para que la propuesta estime la cantidad necesaria para cubrir **6 meses**, basado en el **Consumo Promedio Mensual (CPM)**.
+
+🔹 **Valores negativos en `Cantidad_Necesaria`**  
+Si la cantidad necesaria es negativa, significa que el stock actual **ya es suficiente** para cubrir los 6 meses requeridos.
+
+🔹 **Interpretación de `Critico_Abastecimiento`**  
+- **"Crítico para abastecimiento"** → Medicamentos con **alta rotación** (`Código_Consumo A`) pero **bajo stock** (`Código_Stock C`), por lo que su compra es prioritaria.  
+- **"No es crítico"** → No cumple con estas condiciones.
+
+🔹 **Interpretación de `Stock_Vencimiento_Alto`**  
+- **"Alta cantidad se vence"** → Más del **50% del stock actual** se vencerá en los próximos **90 días**, por lo que puede requerir reposición.  
+- **"Baja cantidad de vencimiento"** → Menos del **50% del stock** está próximo a vencer.
+""")
+
+# 📌 Agregar instrucciones para descargar el archivo correcto
+st.markdown("""
+### 🛠 **Paso previo: Descarga del archivo correcto**
+Antes de subir el archivo, asegúrate de descargar la **primera tabla** llamada  
+**"Existencia y cobertura de medicamentos a nivel nacional"** en el apartado de **Existencias**.
+""")
+
+# Opción 1: Agregar la imagen con la instrucción
+image_path = "tablero existencias.png"  # Nombre del archivo de la imagen
+st.image(image_path, caption="Ubicación del archivo a descargar", use_container_width=True)
+
+# Opción 2: Si prefieres solo texto, puedes comentar la línea anterior y dejar este mensaje:
+# st.info("⚠️ Para obtener los datos correctos, descarga el archivo desde el apartado de **Existencias**, en la primera tabla llamada **'Existencia y cobertura de medicamentos a nivel nacional'**.")
 
 # Entrada del usuario para definir el tiempo de abastecimiento
 tiempo_abastecimiento = st.number_input("Ingrese el número de meses para calcular la cantidad necesaria de abastecimiento:", min_value=1, max_value=24, value=6)
@@ -15,71 +48,57 @@ uploaded_file = st.file_uploader("📂 Sube tu archivo CSV con el inventario", t
 
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
-    
+
     # Limpiar nombres de columnas eliminando espacios extra
     df.columns = df.columns.str.strip()
+
+    # Verificar si las columnas necesarias existen en el archivo subido
+    required_columns = ["CPM Nacional", "Existencias totales", "Cobertura Nacional", 
+                        "Total de existencias que vencen en los próximos 90 días"]
     
-    # Calcular la cantidad necesaria para abastecer según el tiempo configurado
-    df["Cantidad_Necesaria"] = (df["CPM Nacional"] * tiempo_abastecimiento) - df["Existencias totales"]
-    
-    # Identificar medicamentos críticos para abastecimiento (baja cobertura nacional)
-    df["Critico_Abastecimiento"] = df["Cobertura Nacional"] < tiempo_abastecimiento
-    
-    # Identificar medicamentos con más del 50% del stock venciendo en 90 días
-    df["Stock_Vencimiento_Alto"] = df["Total de existencias que vencen en los próximos 90 días"] > (df["Existencias totales"] * 0.5)
-    
-    # Asignar Clasificación ABC basada en consumo promedio
-    df["Contribucion_Consumo"] = (df["CPM Nacional"] / df["CPM Nacional"].sum()) * 100
-    df = df.sort_values(by="CPM Nacional", ascending=False)
-    df["Consumo_Acumulado"] = df["Contribucion_Consumo"].cumsum()
-    df["Codigo_Consumo"] = df["Consumo_Acumulado"].apply(lambda x: "A" if x <= 80 else ("B" if x <= 95 else "C"))
-    
-    # Asignar Clasificación ABC basada en existencias
-    df["Contribucion_Stock"] = (df["Existencias totales"] / df["Existencias totales"].sum()) * 100
-    df = df.sort_values(by="Existencias totales", ascending=False)
-    df["Stock_Acumulado"] = df["Contribucion_Stock"].cumsum()
-    df["Codigo_Stock"] = df["Stock_Acumulado"].apply(lambda x: "A" if x <= 80 else ("B" if x <= 95 else "C"))
-    
-    # Relacionar ambas clasificaciones ABC para establecer la prioridad de compra
-    df["Prioridad_Compra"] = df.apply(
-        lambda row: "Alta" if row["Codigo_Consumo"] == "A" and row["Codigo_Stock"] == "C" else 
-                    ("Media" if row["Codigo_Consumo"] == "B" and row["Codigo_Stock"] == "C" else 
-                    ("Baja" if row["Codigo_Consumo"] == "C" and row["Codigo_Stock"] == "C" else "No Prioritario")), axis=1
-    )
-    
-    # Filtrar medicamentos que vencen en los próximos 90 días
-    df_vencimiento = df[df["Total de existencias que vencen en los próximos 90 días"] > 0].copy()
-    
-    # Calcular el porcentaje de existencias que se vencerán
-    df_vencimiento["Porcentaje_Vencimiento"] = (df_vencimiento["Total de existencias que vencen en los próximos 90 días"] / df_vencimiento["Existencias totales"]) * 100
-    
-    # Clasificar la urgencia según el porcentaje de vencimiento
-    df_vencimiento["Urgencia"] = df_vencimiento["Porcentaje_Vencimiento"].apply(
-        lambda x: "Alta" if x > 50 else ("Media" if x > 25 else "Baja")
-    )
-    
-    # Ordenar por urgencia y porcentaje de vencimiento
-    df_vencimiento = df_vencimiento.sort_values(by=["Urgencia", "Porcentaje_Vencimiento"], ascending=[False, False])
-    
-    # Seleccionar columnas relevantes para el informe
-    df_vencimiento_resumen = df_vencimiento[[
-        "Código", "Medicamento", "Existencias totales", 
-        "Total de existencias que vencen en los próximos 90 días", 
-        "Porcentaje_Vencimiento", "Urgencia", "Codigo_Consumo", "Codigo_Stock", "Prioridad_Compra"
-    ]]
-    
-    # Mostrar el informe en Streamlit
-    st.subheader("📌 Informe de Medicamentos Próximos a Vencer")
-    st.dataframe(df_vencimiento_resumen)
-    
-    # Permitir descarga del archivo procesado
-    csv = df_vencimiento_resumen.to_csv(index=False).encode('utf-8')
-    st.download_button(
-        label="📥 Descargar informe de medicamentos próximos a vencer",
-        data=csv,
-        file_name="Informe_Medicamentos_Proximos_Vencer.csv",
-        mime="text/csv"
-    )
+    missing_columns = [col for col in required_columns if col not in df.columns]
+
+    if missing_columns:
+        st.error(f"⚠️ Error: El archivo no contiene las siguientes columnas requeridas: {', '.join(missing_columns)}")
+    else:
+         # Calcular la cantidad necesaria para abastecer según el tiempo configurado
+         df["Cantidad_Necesaria"] = (df["CPM Nacional"] * tiempo_abastecimiento) - df["Existencias totales"]
+
+        # Identificar medicamentos críticos para abastecimiento (baja cobertura nacional)
+        df["Critico_Abastecimiento"] = df["Cobertura Nacional"] < 6
+
+        # Identificar medicamentos con más del 50% del stock venciendo en 90 días
+        df["Stock_Vencimiento_Alto"] = df["Total de existencias que vencen en los próximos 90 días"] > (df["Existencias totales"] * 0.5)
+
+        # Filtrar los medicamentos que necesitan compra
+        df_compra = df[
+            (df["Cantidad_Necesaria"] > 0) |  
+            df["Critico_Abastecimiento"] |  
+            df["Stock_Vencimiento_Alto"]
+        ].copy()
+
+        # Reemplazar valores en las columnas con etiquetas más descriptivas
+        df_compra["Critico_Abastecimiento"] = df_compra["Critico_Abastecimiento"].replace({
+            True: "Crítico para abastecimiento",
+            False: "No es crítico"
+        })
+        
+        df_compra["Stock_Vencimiento_Alto"] = df_compra["Stock_Vencimiento_Alto"].replace({
+            True: "Alta cantidad se vence",
+            False: "Baja cantidad de vencimiento"
+        })
+
+        # Mostrar resultados
+        st.subheader("📌 Medicamentos que requieren compra")
+        st.dataframe(df_compra)
+
+        # Permitir descarga del archivo procesado
+        csv = df_compra.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 Descargar propuesta de compra",
+            data=csv,
+            file_name="Propuesta_Compra_Medicamentos.csv",
+            mime="text/csv"
+        )
 else:
     st.info("⚠️ Por favor, sube un archivo CSV para analizar el inventario.")
-
