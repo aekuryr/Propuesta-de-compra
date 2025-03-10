@@ -140,22 +140,15 @@ else:
 
 st.markdown("---") # Línea divisoria para separar secciones
 
-st.markdown("---") # Línea divisoria para separar secciones
-
-import streamlit as st
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-
 # Función para calcular la cantidad recomendada de compra
 def calcular_compra(df):
     if "Frecuencia Administración" in df.columns:
         df["Frecuencia Administración"] = df["Frecuencia Administración"].astype(str).str.lower()
         df["Frecuencia Administración"] = df["Frecuencia Administración"].apply(
             lambda x: 1 if x == "diaria" else 7 if x == "semanal" else 30 if x == "mensual" else 
-            0.1667 if x == "cada 4 horas" else 0.25 if x == "cada 6 horas" else 0.5 if x == "cada 12 horas" else 1)
+            6 if x == "cada 4 horas" else 4 if x == "cada 6 horas" else 2 if x == "cada 12 horas" else 1)
     
-    df["Consumo Total Mensual"] = df["Pacientes Estimados"] * df["Dosis Por Administración"] * (30 / df["Frecuencia Administración"])
+    df["Consumo Total Mensual"] = df["Pacientes Estimados"] * df["Dosis Por Administración"] * (30 * df["Frecuencia Administración"])
     df["Stock de Seguridad"] = df["Consumo Total Mensual"] * 0.2  # 20% de margen de seguridad
     df["Cantidad Recomendada a Comprar"] = np.maximum(df["Consumo Total Mensual"] - df["Stock Actual"], 0) + df["Stock de Seguridad"]
     
@@ -228,3 +221,4 @@ if not st.session_state.medicamentos_df.empty:
     ax.set_title("Estimación de Consumo y Compra Recomendada")
     ax.legend()
     st.pyplot(fig)
+
