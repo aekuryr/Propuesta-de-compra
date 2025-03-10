@@ -201,6 +201,13 @@ if st.button("Agregar Medicamento"):
         st.session_state.medicamentos_df = pd.concat([st.session_state.medicamentos_df, nuevo_medicamento], ignore_index=True)
         st.success(f"Medicamento {nombre} agregado exitosamente!")
 
+# Agregar opción para eliminar medicamentos
+del_index = st.number_input("Ingrese el índice del medicamento a eliminar:", min_value=0, max_value=len(st.session_state.medicamentos_df)-1, step=1) if not st.session_state.medicamentos_df.empty else None
+if st.button("Eliminar Medicamento") and del_index is not None:
+    st.session_state.medicamentos_df.drop(index=del_index, inplace=True)
+    st.session_state.medicamentos_df.reset_index(drop=True, inplace=True)
+    st.success("Medicamento eliminado exitosamente!")
+
 st.markdown("---") # Línea divisoria para separar secciones
 
 # Mostrar la tabla solo si hay datos
