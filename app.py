@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+import matplotlib.pyplot as plt
 
 # Configuración de la aplicación
 st.set_page_config(page_title="📊 Análisis de Inventario de Farmacia", layout="wide")
