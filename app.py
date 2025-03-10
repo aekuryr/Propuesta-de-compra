@@ -140,11 +140,6 @@ else:
 
 st.markdown("---") # Línea divisoria para separar secciones
 
-import streamlit as st
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-
 # Función para calcular la cantidad recomendada de compra y ROP
 def calcular_compra(df):
     if "Frecuencia Administración" in df.columns:
@@ -165,10 +160,7 @@ def calcular_compra(df):
     # Calcular el Punto de Reorden (ROP)
     df["Punto de Reorden (ROP)"] = (df["Consumo Diario Promedio"] * df["Tiempo de Entrega"]) + df["Stock de Seguridad"]
 
-    # Calcular la cantidad recomendada a comprar basada en el ROP
-    df["Cantidad Recomendada a Comprar"] = np.maximum(df["Consumo Total Mensual"] - df["Stock Actual"], 0) + df["Stock de Seguridad"]
-    
-    # 🔹 **Conversión a cientos si la unidad de medida es CTO**
+    # 🔹 **Corrección: convertir a cientos si es CTO**
     columnas_a_convertir = ["Consumo Total Mensual", "Consumo Diario Promedio", "Stock de Seguridad", "Punto de Reorden (ROP)", "Cantidad Recomendada a Comprar", "Stock Actual"]
     df.loc[df["Unidad de Medida"] == "CTO", columnas_a_convertir] /= 100
     df.loc[df["Unidad de Medida"] == "CTO", columnas_a_convertir] = df.loc[df["Unidad de Medida"] == "CTO", columnas_a_convertir].round(2)
