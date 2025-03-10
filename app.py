@@ -148,7 +148,8 @@ def calcular_compra(df):
             lambda x: 1 if x == "diaria" else 7 if x == "semanal" else 30 if x == "mensual" else 
             6 if x == "cada 4 horas" else 4 if x == "cada 6 horas" else 2 if x == "cada 12 horas" else 1)
     
-    df["Consumo Total Mensual"] = df["Pacientes Estimados"] * df["Dosis Por Administración"] * (30 / df["Frecuencia Administración"])
+    # Ajuste del cálculo de consumo total mensual para reflejar correctamente la frecuencia
+    df["Consumo Total Mensual"] = df["Pacientes Estimados"] * df["Dosis Por Administración"] * (df["Frecuencia Administración"] * 30)
     df["Stock de Seguridad"] = df["Consumo Total Mensual"] * 0.2  # 20% de margen de seguridad
     df["Cantidad Recomendada a Comprar"] = np.maximum(df["Consumo Total Mensual"] - df["Stock Actual"], 0) + df["Stock de Seguridad"]
     
