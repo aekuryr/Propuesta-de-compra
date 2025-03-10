@@ -161,9 +161,16 @@ def calcular_compra(df):
     df["Punto de Reorden (ROP)"] = (df["Consumo Diario Promedio"] * df["Tiempo de Entrega"]) + df["Stock de Seguridad"]
 
     # 🔹 **Corrección: convertir a cientos si es CTO**
-    columnas_a_convertir = ["Consumo Total Mensual", "Consumo Diario Promedio", "Stock de Seguridad", "Punto de Reorden (ROP)", "Cantidad Recomendada a Comprar", "Stock Actual"]
-    df.loc[df["Unidad de Medida"] == "CTO", columnas_a_convertir] /= 100
-    df.loc[df["Unidad de Medida"] == "CTO", columnas_a_convertir] = df.loc[df["Unidad de Medida"] == "CTO", columnas_a_convertir].round(2)
+    if "Unidad de Medida" in df.columns and any(df["Unidad de Medida"] == "CTO"):
+        columnas_a_convertir = ["Consumo Total Mensual", "Consumo Diario Promedio", "Stock de Seguridad", "Punto de Reorden (ROP)", "Cantidad Recomendada a Comprar", "Stock Actual"]
+        
+        # 🔹 Asegurar que todas las columnas existen en el DataFrame antes de convertir
+        columnas_existentes = [col for col in columnas_a_convertir if col in df.columns]
+        
+        # 🔹 Aplicar conversión solo si hay columnas válidas
+        if columnas_existentes:
+            df.loc[df["Unidad de Medida"] == "CTO", columnas_existentes] /= 100
+            df.loc[df["Unidad de Medida"] == "CTO", columnas_existentes] = df.loc[df["Unidad de Medida"] == "CTO", columnas_existentes].round(2)
 
     return df
 
