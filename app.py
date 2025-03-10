@@ -148,20 +148,35 @@ def calcular_compra(df):
 
 st.markdown("---") # Línea divisoria para separar secciones
 
+import streamlit as st
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Función para calcular la cantidad recomendada de compra
+def calcular_compra(df):
+    df["Frecuencia Administración"] = df["Frecuencia Administración"].apply(lambda x: 1 if x.lower() == "diaria" else 7 if x.lower() == "semanal" else 30)
+    df["Consumo Total Mensual"] = df["Pacientes Estimados"] * df["Dosis Por Administración"] * (30 / df["Frecuencia Administración"])
+    df["Stock de Seguridad"] = df["Consumo Total Mensual"] * 0.2  # 20% de margen de seguridad
+    df["Cantidad Recomendada a Comprar"] = np.maximum(df["Consumo Total Mensual"] - df["Stock Actual"], 0) + df["Stock de Seguridad"]
+    return df
+
 # Configurar la aplicación Streamlit
-st.title("Gestión predictiva de compra de medicamentos sin consumo promedio")
+st.title("Gestión de Compra de Medicamentos")
 
 st.markdown("""
 ### Descripción de las variables:
 - **Medicamento**: Nombre del medicamento a evaluar.
 - **Presentación**: Forma en la que se comercializa (Tableta, Ampolla, Frasco, etc.).
+- **Unidad de Medida**: Define si la compra se gestiona en "C/U" (cantidad unitaria) o "CTO" (cajas o conjuntos de unidades).
 - **Frecuencia Administración**: Intervalo de administración (Diaria, Semanal, Mensual).
 - **Dosis Por Administración**: Cantidad administrada por toma.
 - **Duración del Tratamiento**: Duración en días o semanas.
 - **Pacientes Estimados**: Número de pacientes que lo utilizarán por mes.
 - **Stock Actual**: Cantidad de unidades en inventario.
-- **Unidad de Medida**: Define si la compra se gestiona en "C/U" (cantidad unitaria) o "CTO" (cajas o conjuntos de unidades).
 """)
+
+st.markdown("---") # Línea divisoria para separar secciones
 
 # Número de medicamentos a evaluar
 n = st.number_input("Ingrese el número de medicamentos a evaluar:", min_value=1, step=1)
@@ -169,39 +184,43 @@ n = st.number_input("Ingrese el número de medicamentos a evaluar:", min_value=1
 # Listas para almacenar los datos ingresados
 medicamentos = []
 presentaciones = []
+unidad_medida = []
 frecuencia_administracion = []
 dosis_por_administracion = []
 duracion_tratamiento = []
 pacientes_estimados = []
 stock_actual = []
-unidad_medida = []
 
 # Ingreso de datos de los medicamentos
 for i in range(n):
     st.subheader(f"Datos del Medicamento {i+1}")
     medicamentos.append(st.text_input(f"Nombre del medicamento {i+1}:"))
-    presentaciones.append(st.selectbox(f"Presentación del medicamento {i+1}:", ["Tableta", "Ampolla", "Frasco", "Cápsula"]))
+    presentaciones.append(st.selectbox(f"Presentación del medicamento {i+1}:", ["Tableta", "Ampolla", "Frasco", "Cápsula", "Jarabe"]))
     unidad_medida.append(st.selectbox(f"Unidad de Medida del medicamento {i+1}:", ["C/U", "CTO"]))
     frecuencia_administracion.append(st.selectbox(f"Frecuencia de administración del medicamento {i+1}:", ["Diaria", "Semanal", "Mensual"]))
     dosis_por_administracion.append(st.number_input(f"Dosis por administración del medicamento {i+1}:", min_value=0.1, step=0.1))
     tipo_duracion = st.radio(f"¿La duración del tratamiento del medicamento {i+1} será en días o semanas?", ["Días", "Semanas"])
     if tipo_duracion == "Semanas":
-        duracion_tratamiento.append(st.number_input(f"Duración del tratamiento en semanas del medicamento {i+1}:", min_value=1, step=1) * 7)
+        semanas = st.number_input(f"Duración del tratamiento en semanas del medicamento {i+1}:", min_value=1, step=1)
+        duracion_tratamiento.append(semanas * 7)
     else:
-        duracion_tratamiento.append(st.number_input(f"Duración del tratamiento en días del medicamento {i+1}:", min_value=1, step=1))
+        dias = st.number_input(f"Duración del tratamiento en días del medicamento {i+1}:", min_value=1, step=1)
+        duracion_tratamiento.append(dias)
     pacientes_estimados.append(st.number_input(f"Número estimado de pacientes por mes para el medicamento {i+1}:", min_value=1, step=1))
     stock_actual.append(st.number_input(f"Stock actual disponible del medicamento {i+1}:", min_value=0, step=1))
+
+st.markdown("---") # Línea divisoria para separar secciones
 
 # Crear DataFrame con los datos ingresados
 datos = {
     "Medicamento": medicamentos,
     "Presentación": presentaciones,
-    "Unidad de Medida": unidad_medida
+    "Unidad de Medida": unidad_medida,
     "Frecuencia Administración": frecuencia_administracion,
     "Dosis Por Administración": dosis_por_administracion,
     "Duración del Tratamiento": duracion_tratamiento,
     "Pacientes Estimados": pacientes_estimados,
-    "Stock Actual": stock_actual,
+    "Stock Actual": stock_actual
 }
 df = pd.DataFrame(datos)
 
@@ -220,4 +239,3 @@ if not df.empty:
     ax.set_title("Estimación de Consumo y Compra Recomendada")
     ax.legend()
     st.pyplot(fig)
-
