@@ -140,6 +140,11 @@ else:
 
 st.markdown("---") # Línea divisoria para separar secciones
 
+import streamlit as st
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
 # Función para calcular la cantidad recomendada de compra
 def calcular_compra(df):
     df["Frecuencia Administración"] = df["Frecuencia Administración"].apply(lambda x: 1 if x.lower() == "diaria" else 7 if x.lower() == "semanal" else 30)
@@ -154,7 +159,7 @@ def calcular_compra(df):
     return df
 
 # Configurar la aplicación Streamlit
-st.title("Gestión Predictiva de Compra de Medicamentos sin Consumo Promedio")
+st.title("Gestión de Compra de Medicamentos")
 
 st.markdown("""
 ### Descripción de las variables:
@@ -186,38 +191,39 @@ stock_actual = []
 # Ingreso de datos de los medicamentos
 for i in range(n):
     st.subheader(f"Datos del Medicamento {i+1}")
-    medicamentos.append(st.text_input(f"Nombre del medicamento {i+1}:"))
-    presentaciones.append(st.selectbox(f"Presentación del medicamento {i+1}:", ["Tableta", "Ampolla", "Frasco", "Cápsula", "Jarabe"]))
-    unidad_medida.append(st.selectbox(f"Unidad de Medida del medicamento {i+1}:", ["C/U", "CTO"]))
-    frecuencia_administracion.append(st.selectbox(f"Frecuencia de administración del medicamento {i+1}:", ["Diaria", "Semanal", "Mensual"]))
-    dosis_por_administracion.append(st.number_input(f"Dosis por administración del medicamento {i+1}:", min_value=0.1, step=0.1))
-    tipo_duracion = st.radio(f"¿La duración del tratamiento del medicamento {i+1} será en días o semanas?", ["Días", "Semanas"])
+    medicamentos.append(st.text_input(f"Nombre del medicamento {i+1}:", ""))
+    presentaciones.append(st.selectbox(f"Presentación del medicamento {i+1}:", ["Tableta", "Ampolla", "Frasco", "Cápsula", "Jarabe"], index=0))
+    unidad_medida.append(st.selectbox(f"Unidad de Medida del medicamento {i+1}:", ["C/U", "CTO"], index=0))
+    frecuencia_administracion.append(st.selectbox(f"Frecuencia de administración del medicamento {i+1}:", ["Diaria", "Semanal", "Mensual"], index=0))
+    dosis_por_administracion.append(st.number_input(f"Dosis por administración del medicamento {i+1}:", min_value=0.1, step=0.1, value=0.1))
+    tipo_duracion = st.radio(f"¿La duración del tratamiento del medicamento {i+1} será en días o semanas?", ["Días", "Semanas"], index=0)
     if tipo_duracion == "Semanas":
-        semanas = st.number_input(f"Duración del tratamiento en semanas del medicamento {i+1}:", min_value=1, step=1)
+        semanas = st.number_input(f"Duración del tratamiento en semanas del medicamento {i+1}:", min_value=1, step=1, value=1)
         duracion_tratamiento.append(semanas * 7)
     else:
-        dias = st.number_input(f"Duración del tratamiento en días del medicamento {i+1}:", min_value=1, step=1)
+        dias = st.number_input(f"Duración del tratamiento en días del medicamento {i+1}:", min_value=1, step=1, value=1)
         duracion_tratamiento.append(dias)
-    pacientes_estimados.append(st.number_input(f"Número estimado de pacientes por mes para el medicamento {i+1}:", min_value=1, step=1))
-    stock_actual.append(st.number_input(f"Stock actual disponible del medicamento {i+1}:", min_value=0, step=1))
+    pacientes_estimados.append(st.number_input(f"Número estimado de pacientes por mes para el medicamento {i+1}:", min_value=1, step=1, value=1))
+    stock_actual.append(st.number_input(f"Stock actual disponible del medicamento {i+1}:", min_value=0, step=1, value=0))
 
 st.markdown("---") # Línea divisoria para separar secciones
 
-# Crear DataFrame con los datos ingresados
-datos = {
-    "Medicamento": medicamentos,
-    "Presentación": presentaciones,
-    "Unidad de Medida": unidad_medida,
-    "Frecuencia Administración": frecuencia_administracion,
-    "Dosis Por Administración": dosis_por_administracion,
-    "Duración del Tratamiento": duracion_tratamiento,
-    "Pacientes Estimados": pacientes_estimados,
-    "Stock Actual": stock_actual
-}
-df = pd.DataFrame(datos)
+# Solo mostrar resultados si se han ingresado medicamentos
+if medicamentos and all(medicamentos):
+    # Crear DataFrame con los datos ingresados
+    datos = {
+        "Medicamento": medicamentos,
+        "Presentación": presentaciones,
+        "Unidad de Medida": unidad_medida,
+        "Frecuencia Administración": frecuencia_administracion,
+        "Dosis Por Administración": dosis_por_administracion,
+        "Duración del Tratamiento": duracion_tratamiento,
+        "Pacientes Estimados": pacientes_estimados,
+        "Stock Actual": stock_actual
+    }
+    df = pd.DataFrame(datos)
 
-# Calcular las compras recomendadas
-if not df.empty:
+    # Calcular las compras recomendadas
     df = calcular_compra(df)
     st.subheader("Resultados de la Estimación")
     st.write(df)
