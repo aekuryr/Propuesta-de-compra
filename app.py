@@ -24,7 +24,7 @@ with st.expander("ℹ️ Explicación de las columnas"):
     - **Cantidad_Necesaria:** Diferencia entre la cantidad deseada y el stock actual. Indica cuánto medicamento hace falta para alcanzar la cobertura establecida.
     - **Cantidad_Deseada:** Cantidad óptima de medicamentos para garantizar el abastecimiento durante el período de tiempo seleccionado.
     - **Cantidad_Necesaria_Ajustada:** Cantidad necesaria ajustada considerando las unidades que vencerán en los próximos 90 días.
-    - **Clasificación ABC:** Prioriza medicamentos según su importancia en consumo. A representa el medicamentos más críticos (80% del consumo total).
+    - **Clasificación ABC:** Prioriza medicamentos según su importancia en consumo. Letra "A" representa el medicamentos más críticos (80% del consumo total).
     - **Índice de Rotación:** Veces que el inventario se renueva en un año. Si es bajo, indica riesgo de caducidad.
     """)
 
