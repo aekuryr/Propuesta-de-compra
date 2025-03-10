@@ -140,7 +140,7 @@ else:
 
 st.markdown("---") # Línea divisoria para separar secciones
 
-# Función para calcular la cantidad recomendada de compra
+# Función para calcular la cantidad recomendada de compra y ROP
 def calcular_compra(df):
     if "Frecuencia Administración" in df.columns:
         df["Frecuencia Administración"] = df["Frecuencia Administración"].astype(str).str.lower()
@@ -148,19 +148,29 @@ def calcular_compra(df):
             lambda x: 1 if x == "diaria" else 7 if x == "semanal" else 30 if x == "mensual" else 
             6 if x == "cada 4 horas" else 4 if x == "cada 6 horas" else 2 if x == "cada 12 horas" else 1)
     
-    # Ajuste del cálculo de consumo total mensual para reflejar correctamente la frecuencia
+    # Calcular el consumo mensual correctamente
     df["Consumo Total Mensual"] = df["Pacientes Estimados"] * df["Dosis Por Administración"] * (df["Frecuencia Administración"] * 30)
-    df["Stock de Seguridad"] = df["Consumo Total Mensual"] * 0.2  # 20% de margen de seguridad
+    
+    # Calcular el consumo diario promedio
+    df["Consumo Diario Promedio"] = df["Consumo Total Mensual"] / 30
+
+    # Calcular el stock de seguridad (20% del consumo mensual)
+    df["Stock de Seguridad"] = df["Consumo Total Mensual"] * 0.2
+
+    # Calcular el Punto de Reorden (ROP)
+    df["Punto de Reorden (ROP)"] = (df["Consumo Diario Promedio"] * df["Tiempo de Entrega"]) + df["Stock de Seguridad"]
+
+    # Calcular la cantidad recomendada a comprar basada en el ROP
     df["Cantidad Recomendada a Comprar"] = np.maximum(df["Consumo Total Mensual"] - df["Stock Actual"], 0) + df["Stock de Seguridad"]
     
     # Convertir correctamente a cientos si la unidad de medida es CTO (100 tabletas = 1 CTO)
-    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] /= 100
-    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] = df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]].round(2)
-    
+    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Consumo Diario Promedio", "Stock de Seguridad", "Punto de Reorden (ROP)", "Cantidad Recomendada a Comprar", "Stock Actual"]] /= 100
+    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Consumo Diario Promedio", "Stock de Seguridad", "Punto de Reorden (ROP)", "Cantidad Recomendada a Comprar", "Stock Actual"]] = df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Consumo Diario Promedio", "Stock de Seguridad", "Punto de Reorden (ROP)", "Cantidad Recomendada a Comprar", "Stock Actual"]].round(2)
+
     return df
 
 # Configurar la aplicación Streamlit
-st.title("Gestión de Compra de Medicamentos")
+st.title("Gestión de Compra de Medicamentos - Modelo de Reposición con Punto de Reorden")
 
 st.markdown("---") # Línea divisoria para separar secciones
 
@@ -168,7 +178,7 @@ st.markdown("---") # Línea divisoria para separar secciones
 if "medicamentos_df" not in st.session_state:
     st.session_state.medicamentos_df = pd.DataFrame(columns=[
         "Medicamento", "Presentación", "Unidad de Medida", "Frecuencia Administración", "Dosis Por Administración",
-        "Duración del Tratamiento", "Pacientes Estimados", "Stock Actual"
+        "Duración del Tratamiento", "Pacientes Estimados", "Stock Actual", "Tiempo de Entrega"
     ])
 
 # Ingreso de un solo medicamento a la vez
@@ -187,6 +197,7 @@ else:
 
 pacientes_estimados = st.number_input("Número estimado de pacientes por mes:", min_value=1, step=1, value=1)
 stock_actual = st.number_input("Stock actual disponible:", min_value=0, step=1, value=0)
+tiempo_entrega = st.number_input("Tiempo de entrega (días):", min_value=1, step=1, value=1)
 
 # Validación para evitar datos vacíos
 if st.button("Agregar Medicamento"):
@@ -195,18 +206,11 @@ if st.button("Agregar Medicamento"):
     else:
         nuevo_medicamento = pd.DataFrame([[
             nombre.strip(), presentacion, unidad_medida, frecuencia_administracion,
-            float(dosis_por_administracion), int(duracion_tratamiento), int(pacientes_estimados), int(stock_actual)
+            float(dosis_por_administracion), int(duracion_tratamiento), int(pacientes_estimados), int(stock_actual), int(tiempo_entrega)
         ]], columns=st.session_state.medicamentos_df.columns)
         
         st.session_state.medicamentos_df = pd.concat([st.session_state.medicamentos_df, nuevo_medicamento], ignore_index=True)
         st.success(f"Medicamento {nombre} agregado exitosamente!")
-
-# Agregar opción para eliminar medicamentos
-del_index = st.number_input("Ingrese el índice del medicamento a eliminar:", min_value=0, max_value=len(st.session_state.medicamentos_df)-1, step=1) if not st.session_state.medicamentos_df.empty else None
-if st.button("Eliminar Medicamento") and del_index is not None:
-    st.session_state.medicamentos_df.drop(index=del_index, inplace=True)
-    st.session_state.medicamentos_df.reset_index(drop=True, inplace=True)
-    st.success("Medicamento eliminado exitosamente!")
 
 st.markdown("---") # Línea divisoria para separar secciones
 
@@ -215,17 +219,14 @@ if not st.session_state.medicamentos_df.empty:
     st.subheader("Medicamentos Ingresados")
     st.write(st.session_state.medicamentos_df)
     
-    # Calcular las compras recomendadas
+    # Calcular las compras recomendadas y el ROP
     df_calculado = calcular_compra(st.session_state.medicamentos_df.copy())
     st.subheader("Resultados de la Estimación")
     st.write(df_calculado)
 
-    # Graficar los resultados
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.bar(df_calculado["Medicamento"], df_calculado["Consumo Total Mensual"], label="Consumo Mensual", alpha=0.7, color='brown')
-    ax.bar(df_calculado["Medicamento"], df_calculado["Cantidad Recomendada a Comprar"], label="Compra Recomendada", alpha=0.7, color='orange')
-    ax.set_xticklabels(df_calculado["Medicamento"], rotation=45)
-    ax.set_ylabel("Cantidad de Unidades")
-    ax.set_title("Estimación de Consumo y Compra Recomendada")
-    ax.legend()
-    st.pyplot(fig)
+    # Alerta si el stock está por debajo del ROP
+    for index, row in df_calculado.iterrows():
+        if row["Stock Actual"] < row["Punto de Reorden (ROP)"]:
+            st.warning(f"⚠️ ¡El medicamento {row['Medicamento']} está por debajo del punto de reorden ({row['Punto de Reorden (ROP)']})! Se recomienda hacer un nuevo pedido.")
+
+🚀 **Ahora la APP genera una alerta cuando un medicamento necesita ser repuesto.** Prueba y dime si necesitas más ajustes.
