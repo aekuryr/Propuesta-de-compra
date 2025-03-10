@@ -140,11 +140,6 @@ else:
 
 st.markdown("---") # Línea divisoria para separar secciones
 
-import streamlit as st
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-
 # Función para calcular la cantidad recomendada de compra y ROP
 def calcular_compra(df):
     if "Frecuencia Administración" in df.columns:
@@ -168,7 +163,7 @@ def calcular_compra(df):
     # Calcular la cantidad recomendada a comprar basada en el ROP
     df["Cantidad Recomendada a Comprar"] = np.maximum(df["Consumo Total Mensual"] - df["Stock Actual"], 0) + df["Stock de Seguridad"]
     
-    # 🔹 **Corrección: Convertir correctamente a cientos si la unidad de medida es CTO (100 tabletas = 1 CTO)**
+    # 🔹 **Conversión a cientos si la unidad de medida es CTO**
     columnas_a_convertir = ["Consumo Total Mensual", "Consumo Diario Promedio", "Stock de Seguridad", "Punto de Reorden (ROP)", "Cantidad Recomendada a Comprar", "Stock Actual"]
     df.loc[df["Unidad de Medida"] == "CTO", columnas_a_convertir] /= 100
     df.loc[df["Unidad de Medida"] == "CTO", columnas_a_convertir] = df.loc[df["Unidad de Medida"] == "CTO", columnas_a_convertir].round(2)
@@ -192,7 +187,7 @@ st.subheader("Ingreso de Medicamento")
 nombre = st.text_input("Nombre del medicamento:")
 presentacion = st.selectbox("Presentación:", ["Tableta", "Ampolla", "Frasco", "Cápsula"], index=0)
 unidad_medida = st.selectbox("Unidad de Medida:", ["C/U", "CTO"], index=0)
-frecuencia_administracion = st.selectbox("Frecuencia de Administración:", ["Diaria", "Semanal", "Mensual", "Cada 4 horas", "Cada 6 horas", "cada 8 horas", "Cada 12 horas"], index=0)
+frecuencia_administracion = st.selectbox("Frecuencia de Administración:", ["Diaria", "Semanal", "Mensual", "Cada 4 horas", "Cada 6 horas", "Cada 12 horas"], index=0)
 dosis_por_administracion = st.number_input("Dosis por Administración, use solo números desde 0.1 en adelante:", min_value=0.1, step=0.1, value=0.1)
 tipo_duracion = st.radio("¿La duración del tratamiento será en días o semanas?", ["Días", "Semanas"], index=0)
 
@@ -224,6 +219,20 @@ st.markdown("---") # Línea divisoria para separar secciones
 if not st.session_state.medicamentos_df.empty:
     st.subheader("Medicamentos Ingresados")
     st.write(st.session_state.medicamentos_df)
+
+    # **🔴 Nueva sección: Eliminar Medicamento**
+    st.subheader("Eliminar Medicamento")
+    
+    # Obtener lista de medicamentos para eliminar
+    medicamentos_lista = st.session_state.medicamentos_df["Medicamento"].tolist()
+    
+    # Verificar que hay medicamentos disponibles para eliminar
+    if medicamentos_lista:
+        medicamento_a_eliminar = st.selectbox("Seleccione el medicamento a eliminar:", medicamentos_lista)
+        
+        if st.button("Eliminar Medicamento"):
+            st.session_state.medicamentos_df = st.session_state.medicamentos_df[st.session_state.medicamentos_df["Medicamento"] != medicamento_a_eliminar]
+            st.success(f"Medicamento {medicamento_a_eliminar} eliminado exitosamente.")
     
     # Calcular las compras recomendadas y el ROP
     df_calculado = calcular_compra(st.session_state.medicamentos_df.copy())
