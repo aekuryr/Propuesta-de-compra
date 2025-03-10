@@ -178,6 +178,76 @@ st.markdown("""
 
 st.markdown("---") # Línea divisoria para separar secciones
 
+import streamlit as st
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Función para calcular la cantidad recomendada de compra
+def calcular_compra(df):
+    df["Frecuencia Administración"] = df["Frecuencia Administración"].apply(lambda x: 1 if x.lower() == "diaria" else 7 if x.lower() == "semanal" else 30)
+    df["Consumo Total Mensual"] = df["Pacientes Estimados"] * df["Dosis Por Administración"] * (30 / df["Frecuencia Administración"])
+    df["Stock de Seguridad"] = df["Consumo Total Mensual"] * 0.2  # 20% de margen de seguridad
+    df["Cantidad Recomendada a Comprar"] = np.maximum(df["Consumo Total Mensual"] - df["Stock Actual"], 0) + df["Stock de Seguridad"]
+    
+    # Convertir a centenas si la unidad de medida es CTO
+    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] /= 100
+    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] = df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]].round(2)
+    
+    return df
+
+# Configurar la aplicación Streamlit
+st.title("Gestión de Compra de Medicamentos")
+
+st.markdown("""
+### Descripción de las variables:
+- **Medicamento**: Nombre del medicamento a evaluar.
+- **Presentación**: Forma en la que se comercializa (Tableta, Ampolla, Frasco, etc.).
+- **Unidad de Medida**: Define si la compra se gestiona en "C/U" (cantidad unitaria) o "CTO" (cajas o conjuntos de unidades).
+- **Frecuencia Administración**: Intervalo de administración (Diaria, Semanal, Mensual).
+- **Dosis Por Administración**: Cantidad administrada por toma.
+- **Duración del Tratamiento**: Duración en días o semanas.
+- **Pacientes Estimados**: Número de pacientes que lo utilizarán por mes.
+- **Stock Actual**: Cantidad de unidades en inventario.
+""")
+
+st.markdown("---") # Línea divisoria para separar secciones
+
+import streamlit as st
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Función para calcular la cantidad recomendada de compra
+def calcular_compra(df):
+    df["Frecuencia Administración"] = df["Frecuencia Administración"].apply(lambda x: 1 if x.lower() == "diaria" else 7 if x.lower() == "semanal" else 30)
+    df["Consumo Total Mensual"] = df["Pacientes Estimados"] * df["Dosis Por Administración"] * (30 / df["Frecuencia Administración"])
+    df["Stock de Seguridad"] = df["Consumo Total Mensual"] * 0.2  # 20% de margen de seguridad
+    df["Cantidad Recomendada a Comprar"] = np.maximum(df["Consumo Total Mensual"] - df["Stock Actual"], 0) + df["Stock de Seguridad"]
+    
+    # Convertir a centenas si la unidad de medida es CTO
+    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] /= 100
+    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] = df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]].round(2)
+    
+    return df
+
+# Configurar la aplicación Streamlit
+st.title("Gestión de Compra de Medicamentos")
+
+st.markdown("""
+### Descripción de las variables:
+- **Medicamento**: Nombre del medicamento a evaluar.
+- **Presentación**: Forma en la que se comercializa (Tableta, Ampolla, Frasco, etc.).
+- **Unidad de Medida**: Define si la compra se gestiona en "C/U" (cantidad unitaria) o "CTO" (cajas o conjuntos de unidades).
+- **Frecuencia Administración**: Intervalo de administración (Diaria, Semanal, Mensual).
+- **Dosis Por Administración**: Cantidad administrada por toma.
+- **Duración del Tratamiento**: Duración en días o semanas.
+- **Pacientes Estimados**: Número de pacientes que lo utilizarán por mes.
+- **Stock Actual**: Cantidad de unidades en inventario.
+""")
+
+st.markdown("---") # Línea divisoria para separar secciones
+
 # Número de medicamentos a evaluar
 n = st.number_input("Ingrese el número de medicamentos a evaluar:", min_value=1, step=1)
 
@@ -239,3 +309,4 @@ if not df.empty:
     ax.set_title("Estimación de Consumo y Compra Recomendada")
     ax.legend()
     st.pyplot(fig)
+
