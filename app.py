@@ -147,9 +147,9 @@ def calcular_compra(df):
     return df
 
 # Configurar la aplicación Streamlit
-st.title("Gestión de Compra de Medicamentos")
+st.title("Gestión predictiva de compra de medicamentos sin consumo promedio")
 
-st.markdown("""
+with st.expander("""
 ### Descripción de las variables:
 - **Medicamento**: Nombre del medicamento a evaluar.
 - **Presentación**: Forma en la que se comercializa (Tableta, Ampolla, Frasco, etc.).
