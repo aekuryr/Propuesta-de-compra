@@ -228,5 +228,3 @@ if not st.session_state.medicamentos_df.empty:
     for index, row in df_calculado.iterrows():
         if row["Stock Actual"] < row["Punto de Reorden (ROP)"]:
             st.warning(f"⚠️ ¡El medicamento {row['Medicamento']} está por debajo del punto de reorden ({row['Punto de Reorden (ROP)']})! Se recomienda hacer un nuevo pedido.")
-
-🚀 **Ahora la APP genera una alerta cuando un medicamento necesita ser repuesto.** Prueba y dime si necesitas más ajustes.
