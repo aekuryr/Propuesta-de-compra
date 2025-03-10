@@ -141,7 +141,7 @@ else:
 st.markdown("---") # Línea divisoria para separar secciones
 
 # Función para calcular la cantidad recomendada de compra
-def calcular_compra(df, meses):
+def calcular_compra(df):
     if "Frecuencia Administración" in df.columns:
         df["Frecuencia Administración"] = df["Frecuencia Administración"].astype(str).str.lower()
         df["Frecuencia Administración"] = df["Frecuencia Administración"].apply(
@@ -149,13 +149,12 @@ def calcular_compra(df, meses):
             6 if x == "cada 4 horas" else 4 if x == "cada 6 horas" else 2 if x == "cada 12 horas" else 1)
     
     df["Consumo Total Mensual"] = df["Pacientes Estimados"] * df["Dosis Por Administración"] * df["Frecuencia Administración"]
-    df["Consumo Total Periodo"] = df["Consumo Total Mensual"] * meses  # Ajuste para el periodo seleccionado
     df["Stock de Seguridad"] = df["Consumo Total Mensual"] * 0.2  # 20% basado en 1 mes
-    df["Cantidad Recomendada a Comprar"] = np.maximum(df["Consumo Total Periodo"] - df["Stock Actual"], 0) + df["Stock de Seguridad"]
+    df["Cantidad Recomendada a Comprar"] = np.maximum(df["Consumo Total Mensual"] - df["Stock Actual"], 0) + df["Stock de Seguridad"]
     
     # Convertir correctamente a cientos si la unidad de medida es CTO (100 tabletas = 1 CTO)
-    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Consumo Total Periodo", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] /= 1000
-    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Consumo Total Periodo", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] = df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Consumo Total Periodo", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]].round(2)
+    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] /= 1000
+    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] = df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]].round(2)
     
     return df
 
@@ -187,7 +186,6 @@ else:
 
 pacientes_estimados = st.number_input("Número estimado de pacientes por mes:", min_value=1, step=1, value=1)
 stock_actual = st.number_input("Stock actual disponible:", min_value=0, step=1, value=0)
-meses_cobertura = st.number_input("¿Cuántos meses de cobertura deseas calcular?", min_value=1, step=1, value=1)
 
 # Validación para evitar datos vacíos
 if st.button("Agregar Medicamento"):
@@ -209,14 +207,14 @@ if not st.session_state.medicamentos_df.empty:
     st.subheader("Medicamentos Ingresados")
     st.write(st.session_state.medicamentos_df)
     
-    # Calcular las compras recomendadas con el periodo de cobertura elegido
-    df_calculado = calcular_compra(st.session_state.medicamentos_df.copy(), meses_cobertura)
+    # Calcular las compras recomendadas
+    df_calculado = calcular_compra(st.session_state.medicamentos_df.copy())
     st.subheader("Resultados de la Estimación")
     st.write(df_calculado)
 
     # Graficar los resultados
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.bar(df_calculado["Medicamento"], df_calculado["Consumo Total Periodo"], label="Consumo Periodo", alpha=0.7, color='brown')
+    ax.bar(df_calculado["Medicamento"], df_calculado["Consumo Total Mensual"], label="Consumo Mensual", alpha=0.7, color='brown')
     ax.bar(df_calculado["Medicamento"], df_calculado["Cantidad Recomendada a Comprar"], label="Compra Recomendada", alpha=0.7, color='orange')
     ax.set_xticklabels(df_calculado["Medicamento"], rotation=45)
     ax.set_ylabel("Cantidad de Unidades")
