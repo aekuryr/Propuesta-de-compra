@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 
@@ -136,3 +137,85 @@ if uploaded_file is not None:
         )
 else:
     st.info("⚠️ Por favor, sube un archivo CSV para analizar el inventario.")
+
+# Función para calcular la cantidad recomendada de compra
+def calcular_compra(df):
+    df["Frecuencia Administración"] = df["Frecuencia Administración"].apply(lambda x: 1 if x.lower() == "diaria" else 7 if x.lower() == "semanal" else 30)
+    df["Consumo Total Mensual"] = df["Pacientes Estimados"] * df["Dosis Por Administración"] * (30 / df["Frecuencia Administración"])
+    df["Stock de Seguridad"] = df["Consumo Total Mensual"] * 0.2  # 20% de margen de seguridad
+    df["Cantidad Recomendada a Comprar"] = np.maximum(df["Consumo Total Mensual"] - df["Stock Actual"], 0) + df["Stock de Seguridad"]
+    return df
+
+# Configurar la aplicación Streamlit
+st.title("Gestión de Compra de Medicamentos")
+
+st.markdown("""
+### Descripción de las variables:
+- **Medicamento**: Nombre del medicamento a evaluar.
+- **Presentación**: Forma en la que se comercializa (Tableta, Ampolla, Frasco, etc.).
+- **Frecuencia Administración**: Intervalo de administración (Diaria, Semanal, Mensual).
+- **Dosis Por Administración**: Cantidad administrada por toma.
+- **Duración del Tratamiento**: Duración en días o semanas.
+- **Pacientes Estimados**: Número de pacientes que lo utilizarán por mes.
+- **Stock Actual**: Cantidad de unidades en inventario.
+- **Unidad de Medida**: Define si la compra se gestiona en "C/U" (cantidad unitaria) o "CTO" (cajas o conjuntos de unidades).
+""")
+
+# Número de medicamentos a evaluar
+n = st.number_input("Ingrese el número de medicamentos a evaluar:", min_value=1, step=1)
+
+# Listas para almacenar los datos ingresados
+medicamentos = []
+presentaciones = []
+frecuencia_administracion = []
+dosis_por_administracion = []
+duracion_tratamiento = []
+pacientes_estimados = []
+stock_actual = []
+unidad_medida = []
+
+# Ingreso de datos de los medicamentos
+for i in range(n):
+    st.subheader(f"Datos del Medicamento {i+1}")
+    medicamentos.append(st.text_input(f"Nombre del medicamento {i+1}:"))
+    presentaciones.append(st.selectbox(f"Presentación del medicamento {i+1}:", ["Tableta", "Ampolla", "Frasco", "Cápsula", "Jarabe"]))
+    frecuencia_administracion.append(st.selectbox(f"Frecuencia de administración del medicamento {i+1}:", ["Diaria", "Semanal", "Mensual"]))
+    dosis_por_administracion.append(st.number_input(f"Dosis por administración del medicamento {i+1}:", min_value=0.1, step=0.1))
+    tipo_duracion = st.radio(f"¿La duración del tratamiento del medicamento {i+1} será en días o semanas?", ["Días", "Semanas"])
+    if tipo_duracion == "Semanas":
+        duracion_tratamiento.append(st.number_input(f"Duración del tratamiento en semanas del medicamento {i+1}:", min_value=1, step=1) * 7)
+    else:
+        duracion_tratamiento.append(st.number_input(f"Duración del tratamiento en días del medicamento {i+1}:", min_value=1, step=1))
+    pacientes_estimados.append(st.number_input(f"Número estimado de pacientes por mes para el medicamento {i+1}:", min_value=1, step=1))
+    stock_actual.append(st.number_input(f"Stock actual disponible del medicamento {i+1}:", min_value=0, step=1))
+    unidad_medida.append(st.selectbox(f"Unidad de Medida del medicamento {i+1}:", ["C/U", "CTO"]))
+
+# Crear DataFrame con los datos ingresados
+datos = {
+    "Medicamento": medicamentos,
+    "Presentación": presentaciones,
+    "Frecuencia Administración": frecuencia_administracion,
+    "Dosis Por Administración": dosis_por_administracion,
+    "Duración del Tratamiento": duracion_tratamiento,
+    "Pacientes Estimados": pacientes_estimados,
+    "Stock Actual": stock_actual,
+    "Unidad de Medida": unidad_medida
+}
+df = pd.DataFrame(datos)
+
+# Calcular las compras recomendadas
+if not df.empty:
+    df = calcular_compra(df)
+    st.subheader("Resultados de la Estimación")
+    st.write(df)
+
+    # Graficar los resultados
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.bar(df["Medicamento"], df["Consumo Total Mensual"], label="Consumo Mensual", alpha=0.7, color='brown')
+    ax.bar(df["Medicamento"], df["Cantidad Recomendada a Comprar"], label="Compra Recomendada", alpha=0.7, color='orange')
+    ax.set_xticklabels(df["Medicamento"], rotation=45)
+    ax.set_ylabel("Cantidad de Unidades")
+    ax.set_title("Estimación de Consumo y Compra Recomendada")
+    ax.legend()
+    st.pyplot(fig)
+
