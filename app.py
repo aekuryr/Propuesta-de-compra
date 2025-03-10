@@ -199,25 +199,6 @@ def calcular_compra(df):
 # Configurar la aplicación Streamlit
 st.title("Gestión de Compra de Medicamentos")
 
-st.markdown("""
-### Descripción de las variables:
-- **Medicamento**: Nombre del medicamento a evaluar.
-- **Presentación**: Forma en la que se comercializa (Tableta, Ampolla, Frasco, etc.).
-- **Unidad de Medida**: Define si la compra se gestiona en "C/U" (cantidad unitaria) o "CTO" (cajas o conjuntos de unidades).
-- **Frecuencia Administración**: Intervalo de administración (Diaria, Semanal, Mensual).
-- **Dosis Por Administración**: Cantidad administrada por toma.
-- **Duración del Tratamiento**: Duración en días o semanas.
-- **Pacientes Estimados**: Número de pacientes que lo utilizarán por mes.
-- **Stock Actual**: Cantidad de unidades en inventario.
-""")
-
-st.markdown("---") # Línea divisoria para separar secciones
-
-import streamlit as st
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-
 # Función para calcular la cantidad recomendada de compra
 def calcular_compra(df):
     df["Frecuencia Administración"] = df["Frecuencia Administración"].apply(lambda x: 1 if x.lower() == "diaria" else 7 if x.lower() == "semanal" else 30)
