@@ -148,12 +148,12 @@ def calcular_compra(df):
             lambda x: 1 if x == "diaria" else 7 if x == "semanal" else 30 if x == "mensual" else 
             6 if x == "cada 4 horas" else 4 if x == "cada 6 horas" else 2 if x == "cada 12 horas" else 1)
     
-    df["Consumo Total Mensual"] = df["Pacientes Estimados"] * df["Dosis Por Administración"] * df["Frecuencia Administración"]
-    df["Stock de Seguridad"] = df["Consumo Total Mensual"] * 0.2  # 20% basado en 1 mes
+    df["Consumo Total Mensual"] = df["Pacientes Estimados"] * df["Dosis Por Administración"] * (30 / df["Frecuencia Administración"])
+    df["Stock de Seguridad"] = df["Consumo Total Mensual"] * 0.2  # 20% de margen de seguridad
     df["Cantidad Recomendada a Comprar"] = np.maximum(df["Consumo Total Mensual"] - df["Stock Actual"], 0) + df["Stock de Seguridad"]
     
     # Convertir correctamente a cientos si la unidad de medida es CTO (100 tabletas = 1 CTO)
-    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] /= 1000
+    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] /= 100
     df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] = df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]].round(2)
     
     return df
