@@ -188,7 +188,7 @@ for i in range(n):
     if tipo_duracion == "Semanas":
         duracion_tratamiento.append(st.number_input(f"Duración del tratamiento en semanas del medicamento {i+1}:", min_value=1, step=1) * 7)
     else:
-    duracion_tratamiento.append(st.number_input(f"Duración del tratamiento en días del medicamento {i+1}:", min_value=1, step=1))
+        duracion_tratamiento.append(st.number_input(f"Duración del tratamiento en días del medicamento {i+1}:", min_value=1, step=1))
     pacientes_estimados.append(st.number_input(f"Número estimado de pacientes por mes para el medicamento {i+1}:", min_value=1, step=1))
     stock_actual.append(st.number_input(f"Stock actual disponible del medicamento {i+1}:", min_value=0, step=1))
 
