@@ -173,19 +173,27 @@ unidad_medida = st.selectbox("Unidad de Medida:", ["C/U", "CTO"], index=0)
 frecuencia_administracion = st.selectbox("Frecuencia de Administración:", ["Diaria", "Semanal", "Mensual"], index=0)
 dosis_por_administracion = st.number_input("Dosis por Administración:", min_value=0.1, step=0.1, value=0.1)
 tipo_duracion = st.radio("¿La duración del tratamiento será en días o semanas?", ["Días", "Semanas"], index=0)
+
 if tipo_duracion == "Semanas":
     duracion_tratamiento = st.number_input("Duración del tratamiento en semanas:", min_value=1, step=1, value=1) * 7
 else:
     duracion_tratamiento = st.number_input("Duración del tratamiento en días:", min_value=1, step=1, value=1)
+
 pacientes_estimados = st.number_input("Número estimado de pacientes por mes:", min_value=1, step=1, value=1)
 stock_actual = st.number_input("Stock actual disponible:", min_value=0, step=1, value=0)
 
+# Validación para evitar datos vacíos
 if st.button("Agregar Medicamento"):
-    nuevo_medicamento = pd.DataFrame([[nombre, presentacion, unidad_medida, frecuencia_administracion,
-                                       dosis_por_administracion, duracion_tratamiento, pacientes_estimados, stock_actual]],
-                                     columns=st.session_state.medicamentos_df.columns)
-    st.session_state.medicamentos_df = pd.concat([st.session_state.medicamentos_df, nuevo_medicamento], ignore_index=True)
-    st.success(f"Medicamento {nombre} agregado exitosamente!")
+    if nombre.strip() == "":
+        st.error("El nombre del medicamento no puede estar vacío.")
+    else:
+        nuevo_medicamento = pd.DataFrame([[
+            nombre.strip(), presentacion, unidad_medida, frecuencia_administracion,
+            float(dosis_por_administracion), int(duracion_tratamiento), int(pacientes_estimados), int(stock_actual)
+        ]], columns=st.session_state.medicamentos_df.columns)
+        
+        st.session_state.medicamentos_df = pd.concat([st.session_state.medicamentos_df, nuevo_medicamento], ignore_index=True)
+        st.success(f"Medicamento {nombre} agregado exitosamente!")
 
 st.markdown("---") # Línea divisoria para separar secciones
 
