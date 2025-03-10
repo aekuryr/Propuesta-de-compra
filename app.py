@@ -180,7 +180,8 @@ unidad_medida = []
 for i in range(n):
     st.subheader(f"Datos del Medicamento {i+1}")
     medicamentos.append(st.text_input(f"Nombre del medicamento {i+1}:"))
-    presentaciones.append(st.selectbox(f"Presentación del medicamento {i+1}:", ["Tableta", "Ampolla", "Frasco", "Cápsula", "Jarabe"]))
+    presentaciones.append(st.selectbox(f"Presentación del medicamento {i+1}:", ["Tableta", "Ampolla", "Frasco", "Cápsula"]))
+    unidad_medida.append(st.selectbox(f"Unidad de Medida del medicamento {i+1}:", ["C/U", "CTO"]))
     frecuencia_administracion.append(st.selectbox(f"Frecuencia de administración del medicamento {i+1}:", ["Diaria", "Semanal", "Mensual"]))
     dosis_por_administracion.append(st.number_input(f"Dosis por administración del medicamento {i+1}:", min_value=0.1, step=0.1))
     tipo_duracion = st.radio(f"¿La duración del tratamiento del medicamento {i+1} será en días o semanas?", ["Días", "Semanas"])
@@ -190,18 +191,17 @@ for i in range(n):
         duracion_tratamiento.append(st.number_input(f"Duración del tratamiento en días del medicamento {i+1}:", min_value=1, step=1))
     pacientes_estimados.append(st.number_input(f"Número estimado de pacientes por mes para el medicamento {i+1}:", min_value=1, step=1))
     stock_actual.append(st.number_input(f"Stock actual disponible del medicamento {i+1}:", min_value=0, step=1))
-    unidad_medida.append(st.selectbox(f"Unidad de Medida del medicamento {i+1}:", ["C/U", "CTO"]))
 
 # Crear DataFrame con los datos ingresados
 datos = {
     "Medicamento": medicamentos,
     "Presentación": presentaciones,
+    "Unidad de Medida": unidad_medida
     "Frecuencia Administración": frecuencia_administracion,
     "Dosis Por Administración": dosis_por_administracion,
     "Duración del Tratamiento": duracion_tratamiento,
     "Pacientes Estimados": pacientes_estimados,
     "Stock Actual": stock_actual,
-    "Unidad de Medida": unidad_medida
 }
 df = pd.DataFrame(datos)
 
