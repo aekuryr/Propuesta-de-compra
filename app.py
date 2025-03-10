@@ -140,11 +140,18 @@ else:
 
 st.markdown("---") # Línea divisoria para separar secciones
 
+import streamlit as st
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
 # Función para calcular la cantidad recomendada de compra
 def calcular_compra(df):
     if "Frecuencia Administración" in df.columns:
         df["Frecuencia Administración"] = df["Frecuencia Administración"].astype(str).str.lower()
-        df["Frecuencia Administración"] = df["Frecuencia Administración"].apply(lambda x: 1 if x == "diaria" else 7 if x == "semanal" else 30)
+        df["Frecuencia Administración"] = df["Frecuencia Administración"].apply(
+            lambda x: 1 if x == "diaria" else 7 if x == "semanal" else 30 if x == "mensual" else 
+            0.1667 if x == "cada 4 horas" else 0.25 if x == "cada 6 horas" else 0.5 if x == "cada 12 horas" else 1)
     
     df["Consumo Total Mensual"] = df["Pacientes Estimados"] * df["Dosis Por Administración"] * (30 / df["Frecuencia Administración"])
     df["Stock de Seguridad"] = df["Consumo Total Mensual"] * 0.2  # 20% de margen de seguridad
@@ -173,7 +180,7 @@ st.subheader("Ingreso de Medicamento")
 nombre = st.text_input("Nombre del medicamento:")
 presentacion = st.selectbox("Presentación:", ["Tableta", "Ampolla", "Frasco", "Cápsula", "Jarabe"], index=0)
 unidad_medida = st.selectbox("Unidad de Medida:", ["C/U", "CTO"], index=0)
-frecuencia_administracion = st.selectbox("Frecuencia de Administración:", ["Diaria", "Semanal", "Mensual"], index=0)
+frecuencia_administracion = st.selectbox("Frecuencia de Administración:", ["Diaria", "Semanal", "Mensual", "Cada 4 horas", "Cada 6 horas", "Cada 12 horas"], index=0)
 dosis_por_administracion = st.number_input("Dosis por Administración:", min_value=0.1, step=0.1, value=0.1)
 tipo_duracion = st.radio("¿La duración del tratamiento será en días o semanas?", ["Días", "Semanas"], index=0)
 
