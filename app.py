@@ -154,7 +154,7 @@ def calcular_compra(df, meses):
     df["Cantidad Recomendada a Comprar"] = np.maximum(df["Consumo Total Periodo"] - df["Stock Actual"], 0) + df["Stock de Seguridad"]
     
     # Convertir correctamente a cientos si la unidad de medida es CTO (100 tabletas = 1 CTO)
-    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Consumo Total Periodo", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] /= 100
+    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Consumo Total Periodo", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] /= 1000
     df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Consumo Total Periodo", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] = df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Consumo Total Periodo", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]].round(2)
     
     return df
