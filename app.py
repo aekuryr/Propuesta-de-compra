@@ -146,10 +146,12 @@ def calcular_compra(df):
     df["Cantidad Recomendada a Comprar"] = np.maximum(df["Consumo Total Mensual"] - df["Stock Actual"], 0) + df["Stock de Seguridad"]
     return df
 
+st.markdown("---") # Línea divisoria para separar secciones
+
 # Configurar la aplicación Streamlit
 st.title("Gestión predictiva de compra de medicamentos sin consumo promedio")
 
-with st.expander("""
+st.markdown("""
 ### Descripción de las variables:
 - **Medicamento**: Nombre del medicamento a evaluar.
 - **Presentación**: Forma en la que se comercializa (Tableta, Ampolla, Frasco, etc.).
