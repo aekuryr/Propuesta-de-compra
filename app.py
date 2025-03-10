@@ -138,6 +138,7 @@ if uploaded_file is not None:
 else:
     st.info("⚠️ Por favor, sube un archivo CSV para analizar el inventario.")
 
+st.markdown("---") # Línea divisoria para separar secciones
 
 # Función para calcular la cantidad recomendada de compra
 def calcular_compra(df):
