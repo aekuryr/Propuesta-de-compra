@@ -140,20 +140,18 @@ else:
 
 st.markdown("---") # Línea divisoria para separar secciones
 
-import streamlit as st
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-
 # Función para calcular la cantidad recomendada de compra
 def calcular_compra(df):
-    df["Frecuencia Administración"] = df["Frecuencia Administración"].apply(lambda x: 1 if x.lower() == "diaria" else 7 if x.lower() == "semanal" else 30)
+    if "Frecuencia Administración" in df.columns:
+        df["Frecuencia Administración"] = df["Frecuencia Administración"].astype(str).str.lower()
+        df["Frecuencia Administración"] = df["Frecuencia Administración"].apply(lambda x: 1 if x == "diaria" else 7 if x == "semanal" else 30)
+    
     df["Consumo Total Mensual"] = df["Pacientes Estimados"] * df["Dosis Por Administración"] * (30 / df["Frecuencia Administración"])
     df["Stock de Seguridad"] = df["Consumo Total Mensual"] * 0.2  # 20% de margen de seguridad
     df["Cantidad Recomendada a Comprar"] = np.maximum(df["Consumo Total Mensual"] - df["Stock Actual"], 0) + df["Stock de Seguridad"]
     
-    # Convertir a centenas si la unidad de medida es CTO
-    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] /= 100
+    # Convertir a cientos si la unidad de medida es CTO (100 tabletas = 0.10, etc.)
+    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] /= 1000
     df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]] = df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Stock de Seguridad", "Cantidad Recomendada a Comprar", "Stock Actual"]].round(2)
     
     return df
@@ -208,7 +206,7 @@ if not st.session_state.medicamentos_df.empty:
     st.write(st.session_state.medicamentos_df)
     
     # Calcular las compras recomendadas
-    df_calculado = calcular_compra(st.session_state.medicamentos_df)
+    df_calculado = calcular_compra(st.session_state.medicamentos_df.copy())
     st.subheader("Resultados de la Estimación")
     st.write(df_calculado)
 
