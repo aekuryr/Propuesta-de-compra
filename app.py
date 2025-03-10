@@ -140,6 +140,11 @@ else:
 
 st.markdown("---") # Línea divisoria para separar secciones
 
+import streamlit as st
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
 # Función para calcular la cantidad recomendada de compra y ROP
 def calcular_compra(df):
     if "Frecuencia Administración" in df.columns:
@@ -163,9 +168,10 @@ def calcular_compra(df):
     # Calcular la cantidad recomendada a comprar basada en el ROP
     df["Cantidad Recomendada a Comprar"] = np.maximum(df["Consumo Total Mensual"] - df["Stock Actual"], 0) + df["Stock de Seguridad"]
     
-    # Convertir correctamente a cientos si la unidad de medida es CTO (100 tabletas = 1 CTO)
-    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Consumo Diario Promedio", "Stock de Seguridad", "Punto de Reorden (ROP)", "Cantidad Recomendada a Comprar", "Stock Actual"]] /= 100
-    df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Consumo Diario Promedio", "Stock de Seguridad", "Punto de Reorden (ROP)", "Cantidad Recomendada a Comprar", "Stock Actual"]] = df.loc[df["Unidad de Medida"] == "CTO", ["Consumo Total Mensual", "Consumo Diario Promedio", "Stock de Seguridad", "Punto de Reorden (ROP)", "Cantidad Recomendada a Comprar", "Stock Actual"]].round(2)
+    # 🔹 **Corrección: Convertir correctamente a cientos si la unidad de medida es CTO (100 tabletas = 1 CTO)**
+    columnas_a_convertir = ["Consumo Total Mensual", "Consumo Diario Promedio", "Stock de Seguridad", "Punto de Reorden (ROP)", "Cantidad Recomendada a Comprar", "Stock Actual"]
+    df.loc[df["Unidad de Medida"] == "CTO", columnas_a_convertir] /= 100
+    df.loc[df["Unidad de Medida"] == "CTO", columnas_a_convertir] = df.loc[df["Unidad de Medida"] == "CTO", columnas_a_convertir].round(2)
 
     return df
 
