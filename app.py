@@ -183,7 +183,7 @@ def calcular_compra(df):
     return df
 
 # Configurar la aplicación Streamlit
-st.title("Gestión de Compra de Medicamentos - Modelo de Reposición con Punto de Reorden")
+st.title("Modelo de Gestión de Compra de Medicamentos sin CPM")
 
 st.markdown("---") # Línea divisoria para separar secciones
 
