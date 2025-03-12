@@ -200,7 +200,7 @@ nombre = st.text_input("Nombre del medicamento:")
 presentacion = st.selectbox("Presentación:", ["Tableta", "Ampolla", "Frasco", "Cápsula"], index=0)
 unidad_medida = st.selectbox("Unidad de Medida:", ["C/U", "CTO"], index=0)
 frecuencia_administracion = st.selectbox("Frecuencia de Administración:", ["Diaria", "Semanal", "Mensual", "Cada 4 horas", "Cada 6 horas", "Cada 8 horas", "Cada 12 horas"], index=0)
-dosis_por_administracion = st.number_input("Dosis por Administración, use solo números desde 0.1 en adelante:", min_value=0.1, step=0.1, value=0.1)
+dosis_por_administracion = st.number_input("Dosis por Administración, no coloque unidades de medida:", min_value=0.1, step=0.1, value=0.1)
 tipo_duracion = st.radio("¿La duración del tratamiento será en días o semanas?", ["Días", "Semanas"], index=0)
 
 if tipo_duracion == "Semanas":
